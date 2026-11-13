@@ -1,0 +1,141 @@
+<section class="lesson" id="s0" data-num="0" data-title="Obiective">
+<script type="text/markdown">
+### Pentru cine e lecția
+
+Dacă ești la început: gândește-te la calculator ca la un **birou foarte aglomerat**. Ai un singur „creier” (procesorul), puțină „masă de lucru” (memoria RAM), multe dosare (fișiere) și mai mulți oameni care vor să lucreze în același timp (programele). **Sistemul de operare** e secretara care împarte masa, spune cine vorbește la telefon și ține ordine în dosare.
+
+### Ce acoperă lecția
+
+| Bloc | Ce vei înțelege |
+|---|---|
+| Teorie | Ce e un SO, de ce există, tipuri, ce e kernel-ul |
+| Procese | Ce e un proces, stările lui, PID, diferența față de un fir |
+| Planificare | Cum decide SO-ul cine folosește CPU-ul (FCFS, Round Robin…) |
+| Terminal | Aceleași idei pe **Linux** și **Windows**, cu comenzi pe care le poți copia |
+
+> [!TIP]
+> La fiecare cutie de terminal: alege tab-ul **Linux** sau **Windows**, apasă **Rulează** (vezi comanda „scrisă”), apoi **Copiază comenzile** și încearcă-le pe calculatorul tău (WSL, VirtualBox, sau PowerShell).
+</script>
+</section>
+
+
+<section class="lesson" id="s1" data-num="1" data-title="Ce este un sistem de operare">
+<script type="text/markdown">
+### 1.1. Rolul SO — pe limba începătorului
+
+Un **sistem de operare (SO)** este programul „de bază” al calculatorului. Nu e un joc și nu e Word: e stratul care pornește când apeși butonul de power și care rămâne pe fundal cât timp lucrezi.
+
+Are **două roluri** pe care merită să le ții minte:
+
+1. **Gestionează resursele** — procesorul (cine calculează acum?), memoria RAM (cine ocupă spațiu?), discul, rețeaua, tastatura, ecranul.
+2. **Face legătura** între tine / aplicații și hardware. Tu apeși „Salvează”; SO-ul știe *cum* se scrie pe disc, indiferent că e SSD sau HDD.
+
+**Exemple de SO:** Windows 10/11, macOS, Linux (Ubuntu, Fedora…), Android, iOS.
+
+Fără SO, fiecare program ar trebui să știe detalii de electronica plăcii de bază. Ar fi ca și cum fiecare client din magazin ar trebui să meargă singur în depozit după marfă — haos. SO-ul e „vânzătorul” care organizează cererile.
+
+### 1.2. Evoluție și tipuri (pe scurt)
+
+SO-urile nu au arătat mereu ca azi (ferestre, mouse, multitasking). Iată tipurile pe care le vei întâlni în manuale:
+
+| Tip | Idee simplă | Unde îl vezi |
+|---|---|---|
+| **Batch** | job-uri pe rând, fără să stai la tastatură | istoric / centre de calcul vechi |
+| **Time-sharing** | mai multe programe / utilizatori împart CPU-ul în felii de timp | PC-ul și serverul tău de azi |
+| **Timp real** | răspunsul trebuie să vină *înainte* de un termen | frâne ABS, roboti industriali |
+| **Distribuite** | resurse pe mai multe calculatoare, văzute ca un sistem | clustere, cloud |
+| **Mobile** | economie de baterie, senzori, aplicații izolate | telefon |
+
+Linux și Windows moderne sunt, în esență, sisteme **time-sharing**: par că rulează 20 de programe „simultan”, dar procesorul sare foarte rapid de la unul la altul.
+
+### 1.3. Kernel, spațiu utilizator, apeluri de sistem
+
+Imaginează două etaje:
+
+- **Etajul de jos = kernel (nucleu)** — are voie să atingă hardware-ul. E „zona restrânsă”.
+- **Etajul de sus = spațiu utilizator** — aici stau Chrome, VS Code, jocurile. Ele **nu** au voie să scrie direct pe disc sau în memoria altui program.
+
+Când aplicația vrea ceva „periculos” (citește un fișier, creează un proces), face un **apel de sistem** (*system call*): o cerere oficială către kernel.
+
+| Concept | Ce este | Exemplu |
+|---|---|---|
+| **Kernel** | inima SO-ului | gestionează CPU, memorie, I/O |
+| **Spațiu utilizator** | unde rulează programele tale | browserul |
+| **Syscall** | „te rog, kernel, fă X” | `open`, `read`, `fork` / `CreateProcess` |
+| **Shell** | program care citește comenzi text | `bash`, PowerShell, CMD |
+| **GUI** | interfață cu ferestre | Explorer, GNOME — tot cere kernelului pe sub capotă |
+
+```text
+[ tu apeși pe o icoană / scrii o comandă ]
+              │
+              ▼
+[ aplicație sau shell  — spațiu utilizator ]
+              │  apel de sistem (syscall)
+              ▼
+[           kernel                      ]
+              │
+              ▼
+[     hardware (CPU, RAM, disc…)        ]
+```
+
+### 1.4. Arhitecturi de kernel
+
+Cum e „organizat” nucleul diferă de la SO la SO:
+
+| Tip | Pe scurt | Exemplu |
+|---|---|---|
+| **Monolitic** | multe servicii trăiesc în kernel → rapid, dar greu de întreținut | Linux (model clasic) |
+| **Microkernel** | kernel foarte mic; restul e în procese separate | Minix, QNX |
+| **Hibrid** | combinație pragmatică | Windows NT |
+
+Nu trebuie să proiectezi un kernel la primul curs — e suficient să știi că **Linux ≠ Windows la interior**, deși ambele îți oferă „procese”, „fișiere” și un terminal.
+</script>
+
+<div class="term" data-title="Cine ești și pe ce sistem rulezi" data-desc="Primul reflex în laborator: află utilizatorul, numele mașinii și versiunea sistemului.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "whoami", "out": "student"},
+    {"cmd": "hostname", "out": "so-lab"},
+    {"cmd": "uname -a", "out": "Linux so-lab 6.8.0-40-generic #40-Ubuntu SMP x86_64 GNU/Linux"}
+  ],
+  "windows": [
+    {"cmd": "whoami", "out": "desktop-abc\\student"},
+    {"cmd": "hostname", "out": "DESKTOP-ABC"},
+    {"cmd": "ver", "out": "Microsoft Windows [Version 10.0.26200.6584]"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+**Ce tocmai ai „rulat”:**
+
+- `whoami` — „cu ce cont sunt logat?”
+- `hostname` — numele calculatorului în rețea
+- `uname -a` (Linux) / `ver` (Windows) — ce SO și ce versiune
+
+> [!INFO]
+> Pe Windows, `systeminfo` dă un raport lung (memorie, hotfix-uri). E util, dar greu de citit dintr-o privire — începe cu `ver`, `hostname`, `whoami`.
+</script>
+
+<div class="term" data-title="Ajutor pentru comenzi" data-desc="Nu trebuie să memorezi totul. Învață să ceri ajutorul sistemului.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ls --help", "out": "Usage: ls [OPTION]... [FILE]...\nList information about FILEs (the current directory by default).\n  -a, --all      do not ignore entries starting with .\n  -l             use a long listing format\n..."},
+    {"cmd": "man ls", "out": "LS(1)                         User Commands\nNAME\n       ls - list directory contents\nSYNOPSIS\n       ls [OPTION]... [FILE]...\n(man se închide cu q)"}
+  ],
+  "windows": [
+    {"cmd": "dir /?", "out": "Displays a list of files and subdirectories in a directory.\nDIR [drive:][path][filename] [/A[[:]attributes]] [/B] [/C] [/D] [/L] ..."},
+    {"cmd": "help dir", "out": "Displays a list of files and subdirectories in a directory.\n\nDIR [drive:][path][filename] ..."}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!TIP]
+> Obicei bun: înainte să cauți pe Google „cum fac X”, încearcă `comanda --help`, `man comanda` (Linux) sau `comanda /?` / `help comanda` (Windows).
+</script>
+</section>

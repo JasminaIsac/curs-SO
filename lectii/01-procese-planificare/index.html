@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Procese și planificare — SO.lab</title>
+    <meta name="description" content="Lecție interactivă: sisteme de operare, procese, planificare și comenzi Linux/Windows în terminal.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+    <link rel="stylesheet" href="assets/app.css">
+    <link rel="stylesheet" href="../../assets/course-nav.css">
+</head>
+<body>
+    <header class="topbar">
+        <button class="icon-btn menu-btn" id="menu" type="button" aria-label="Deschide cuprinsul" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <a class="brand" href="../../index.html">
+            <span class="brand-mark">SO<span>.</span>lab</span>
+            <span class="brand-sub">Lecția 1 · Procese &amp; planificare</span>
+        </a>
+        <div class="topbar-actions">
+            <button class="icon-btn" id="theme" type="button">Temă: auto</button>
+        </div>
+        <span class="progress" aria-hidden="true"></span>
+    </header>
+
+    <button type="button" class="nav-backdrop" id="nav-backdrop" aria-label="Închide meniul" aria-hidden="true"></button>
+    <div class="layout">
+        <aside class="sidebar" id="sidebar" aria-label="Cuprins">
+            <div class="search">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
+                <input id="search" type="search" placeholder="Caută (apasă /)" aria-label="Caută în lecție">
+            </div>
+            <ol class="toc" id="toc"></ol>
+            <p class="toc-empty" id="toc-empty" hidden>Niciun rezultat.</p>
+        </aside>
+
+        <main class="content" id="top">
+            <div class="hero">
+                <span class="kicker">Sisteme de operare · documentație interactivă</span>
+                <h1>Noțiuni de bază, procese și planificare</h1>
+                <p>Lecție pentru începători: ce e un SO, ce e un proces, cum se împarte CPU-ul — plus terminale Linux/Windows pe care le „rulezi” pe loc. Deschide meniul ☰ din stânga pentru cuprins.</p>
+                <div class="hero-stats">
+                    <span class="chip"><b id="stat-sections">0</b> secțiuni</span>
+                    <span class="chip"><b id="stat-demos">0</b> demo-uri</span>
+                    <span class="chip"><b id="stat-qa">0</b> întrebări</span>
+                    <span class="chip">Tasta <b>/</b> căutare</span>
+                </div>
+            </div>
+
+<section class="lesson" id="s0" data-num="0" data-title="Obiective">
+<script type="text/markdown">
+### Pentru cine e lecția
+
+Dacă ești la început: gândește-te la calculator ca la un **birou foarte aglomerat**. Ai un singur „creier” (procesorul), puțină „masă de lucru” (memoria RAM), multe dosare (fișiere) și mai mulți oameni care vor să lucreze în același timp (programele). **Sistemul de operare** e secretara care împarte masa, spune cine vorbește la telefon și ține ordine în dosare.
+
+### Ce acoperă lecția
+
+| Bloc | Ce vei înțelege |
+|---|---|
+| Teorie | Ce e un SO, de ce există, tipuri, ce e kernel-ul |
+| Procese | Ce e un proces, stările lui, PID, diferența față de un fir |
+| Planificare | Cum decide SO-ul cine folosește CPU-ul (FCFS, Round Robin…) |
+| Terminal | Aceleași idei pe **Linux** și **Windows**, cu comenzi pe care le poți copia |
+
+> [!TIP]
+> La fiecare cutie de terminal: alege tab-ul **Linux** sau **Windows**, apasă **Rulează** (vezi comanda „scrisă”), apoi **Copiază comenzile** și încearcă-le pe calculatorul tău (WSL, VirtualBox, sau PowerShell).
+</script>
+</section>
+
+
+<section class="lesson" id="s1" data-num="1" data-title="Ce este un sistem de operare">
+<script type="text/markdown">
+### 1.1. Rolul SO — pe limba începătorului
+
+Un **sistem de operare (SO)** este programul „de bază” al calculatorului. Nu e un joc și nu e Word: e stratul care pornește când apeși butonul de power și care rămâne pe fundal cât timp lucrezi.
+
+Are **două roluri** pe care merită să le ții minte:
+
+1. **Gestionează resursele** — procesorul (cine calculează acum?), memoria RAM (cine ocupă spațiu?), discul, rețeaua, tastatura, ecranul.
+2. **Face legătura** între tine / aplicații și hardware. Tu apeși „Salvează”; SO-ul știe *cum* se scrie pe disc, indiferent că e SSD sau HDD.
+
+**Exemple de SO:** Windows 10/11, macOS, Linux (Ubuntu, Fedora…), Android, iOS.
+
+Fără SO, fiecare program ar trebui să știe detalii de electronica plăcii de bază. Ar fi ca și cum fiecare client din magazin ar trebui să meargă singur în depozit după marfă — haos. SO-ul e „vânzătorul” care organizează cererile.
+
+### 1.2. Evoluție și tipuri (pe scurt)
+
+SO-urile nu au arătat mereu ca azi (ferestre, mouse, multitasking). Iată tipurile pe care le vei întâlni în manuale:
+
+| Tip | Idee simplă | Unde îl vezi |
+|---|---|---|
+| **Batch** | job-uri pe rând, fără să stai la tastatură | istoric / centre de calcul vechi |
+| **Time-sharing** | mai multe programe / utilizatori împart CPU-ul în felii de timp | PC-ul și serverul tău de azi |
+| **Timp real** | răspunsul trebuie să vină *înainte* de un termen | frâne ABS, roboti industriali |
+| **Distribuite** | resurse pe mai multe calculatoare, văzute ca un sistem | clustere, cloud |
+| **Mobile** | economie de baterie, senzori, aplicații izolate | telefon |
+
+Linux și Windows moderne sunt, în esență, sisteme **time-sharing**: par că rulează 20 de programe „simultan”, dar procesorul sare foarte rapid de la unul la altul.
+
+### 1.3. Kernel, spațiu utilizator, apeluri de sistem
+
+Imaginează două etaje:
+
+- **Etajul de jos = kernel (nucleu)** — are voie să atingă hardware-ul. E „zona restrânsă”.
+- **Etajul de sus = spațiu utilizator** — aici stau Chrome, VS Code, jocurile. Ele **nu** au voie să scrie direct pe disc sau în memoria altui program.
+
+Când aplicația vrea ceva „periculos” (citește un fișier, creează un proces), face un **apel de sistem** (*system call*): o cerere oficială către kernel.
+
+| Concept | Ce este | Exemplu |
+|---|---|---|
+| **Kernel** | inima SO-ului | gestionează CPU, memorie, I/O |
+| **Spațiu utilizator** | unde rulează programele tale | browserul |
+| **Syscall** | „te rog, kernel, fă X” | `open`, `read`, `fork` / `CreateProcess` |
+| **Shell** | program care citește comenzi text | `bash`, PowerShell, CMD |
+| **GUI** | interfață cu ferestre | Explorer, GNOME — tot cere kernelului pe sub capotă |
+
+```text
+[ tu apeși pe o icoană / scrii o comandă ]
+              │
+              ▼
+[ aplicație sau shell  — spațiu utilizator ]
+              │  apel de sistem (syscall)
+              ▼
+[           kernel                      ]
+              │
+              ▼
+[     hardware (CPU, RAM, disc…)        ]
+```
+
+### 1.4. Arhitecturi de kernel
+
+Cum e „organizat” nucleul diferă de la SO la SO:
+
+| Tip | Pe scurt | Exemplu |
+|---|---|---|
+| **Monolitic** | multe servicii trăiesc în kernel → rapid, dar greu de întreținut | Linux (model clasic) |
+| **Microkernel** | kernel foarte mic; restul e în procese separate | Minix, QNX |
+| **Hibrid** | combinație pragmatică | Windows NT |
+
+Nu trebuie să proiectezi un kernel la primul curs — e suficient să știi că **Linux ≠ Windows la interior**, deși ambele îți oferă „procese”, „fișiere” și un terminal.
+</script>
+
+<div class="term" data-title="Cine ești și pe ce sistem rulezi" data-desc="Primul reflex în laborator: află utilizatorul, numele mașinii și versiunea sistemului.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "whoami", "out": "student"},
+    {"cmd": "hostname", "out": "so-lab"},
+    {"cmd": "uname -a", "out": "Linux so-lab 6.8.0-40-generic #40-Ubuntu SMP x86_64 GNU/Linux"}
+  ],
+  "windows": [
+    {"cmd": "whoami", "out": "desktop-abc\\student"},
+    {"cmd": "hostname", "out": "DESKTOP-ABC"},
+    {"cmd": "ver", "out": "Microsoft Windows [Version 10.0.26200.6584]"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+**Ce tocmai ai „rulat”:**
+
+- `whoami` — „cu ce cont sunt logat?”
+- `hostname` — numele calculatorului în rețea
+- `uname -a` (Linux) / `ver` (Windows) — ce SO și ce versiune
+
+> [!INFO]
+> Pe Windows, `systeminfo` dă un raport lung (memorie, hotfix-uri). E util, dar greu de citit dintr-o privire — începe cu `ver`, `hostname`, `whoami`.
+</script>
+
+<div class="term" data-title="Ajutor pentru comenzi" data-desc="Nu trebuie să memorezi totul. Învață să ceri ajutorul sistemului.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ls --help", "out": "Usage: ls [OPTION]... [FILE]...\nList information about FILEs (the current directory by default).\n  -a, --all      do not ignore entries starting with .\n  -l             use a long listing format\n..."},
+    {"cmd": "man ls", "out": "LS(1)                         User Commands\nNAME\n       ls - list directory contents\nSYNOPSIS\n       ls [OPTION]... [FILE]...\n(man se închide cu q)"}
+  ],
+  "windows": [
+    {"cmd": "dir /?", "out": "Displays a list of files and subdirectories in a directory.\nDIR [drive:][path][filename] [/A[[:]attributes]] [/B] [/C] [/D] [/L] ..."},
+    {"cmd": "help dir", "out": "Displays a list of files and subdirectories in a directory.\n\nDIR [drive:][path][filename] ..."}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!TIP]
+> Obicei bun: înainte să cauți pe Google „cum fac X”, încearcă `comanda --help`, `man comanda` (Linux) sau `comanda /?` / `help comanda` (Windows).
+</script>
+</section>
+
+
+<section class="lesson" id="s2" data-num="2" data-title="Procese: stări, PCB, fire">
+<script type="text/markdown">
+### 2.1. Ce este un proces — analogie
+
+Pe disc ai un **program** (fișier): de exemplu `firefox.exe` sau `/usr/bin/firefox`. E ca o rețetă pe hârtie.
+
+Când îl pornești, SO-ul creează un **proces**: rețeta „gătită” acum — cu ingrediente (date în RAM), ustensile (fișiere deschise) și un număr de comandă (**PID** = *Process ID*).
+
+| | Program | Proces |
+|---|---|---|
+| Unde trăiește | pe disc | în memorie, „viu” |
+| Câte poți avea | un fișier | **mai multe** procese din același program |
+| Identificare | cale / nume fișier | **PID** (număr) |
+
+Poți deschide Firefox de două ori (sau multe tab-uri ca procese/fire): același program, PID-uri diferite.
+
+### 2.2. Stările tipice ale unui proces
+
+Un proces nu rulează mereu. Trece prin stări, ca o persoană la ghișeu:
+
+| Stare | Sens pe limba ta | Exemplu |
+|---|---|---|
+| **nou** | tocmai creat, încă nu e în coadă | ai dat dublu-clic, SO-ul îl pregătește |
+| **gata (ready)** | așteaptă la rând la CPU | vrea să calculeze, dar altcineva e la „casă” |
+| **rulează (running)** | are procesorul acum | calculează / execută instrucțiuni |
+| **blocat (waiting)** | așteaptă altceva, nu CPU | citește de pe disc, așteaptă rețeaua, un click |
+| **terminat** | a terminat; SO-ul curăță | ai închis fereastra |
+
+**Preempție:** planificatorul ia CPU-ul de la un proces care *putea* continua și îl dă altuia (din *rulează* → *gata*). Așa simți multitasking-ul.
+
+> [!INFO]
+> Diferență importantă: **gata** = „pot rula imediat, dă-mi CPU”. **blocat** = „chiar dacă CPU e liber, tot nu pot — aștept I/O”.
+</script>
+
+<div class="sim" data-kind="states" data-title="Simulator: stările unui proces" data-desc="Pornește din «nou». Apasă doar săgețile oferite — vei vedea ce tranziții sunt legale. Din «rulează» poți merge la gata (preempție), blocat (I/O) sau terminat."></div>
+
+<script type="text/markdown">
+### 2.3. PCB și comutarea contextului
+
+Kernelul ține pentru fiecare proces o fișă: **PCB** (*Process Control Block*). Conține, printre altele:
+
+- PID și starea;
+- registrele CPU (unde a rămas execuția);
+- informații despre memorie și fișiere deschise;
+- prioritate.
+
+**Comutarea contextului** (*context switch*) e schimbarea de la procesul A la B:
+
+1. salvează starea lui A în PCB-ul lui A;
+2. planificatorul alege B;
+3. încarcă starea lui B din PCB-ul lui B;
+4. B continuă ca și cum nu s-ar fi oprit.
+
+E utilă, dar **nu e gratuită** — durează microsecunde. De aceea, la Round Robin, dacă tai timpul prea mărunt, pierzi timp doar schimbând procesele.
+
+### 2.4. Proces vs fir de execuție (thread)
+
+Un **fir** e un „fir de execuție” înăuntrul unui proces. Simplificat:
+
+| | Proces | Fir (thread) |
+|---|---|---|
+| Memorie | spațiu propriu (în general izolat de alții) | **partajează** memoria procesului-părinte |
+| Creare | mai grea / mai scumpă | mai ușoară |
+| Imagine | un restaurant întreg | un ospătar în același restaurant |
+
+Un proces are **cel puțin un** fir. Dacă un browser folosește mai multe fire, ele văd aceleași date — rapid, dar trebuie grijă (concurență = lecția 3).
+</script>
+
+<div class="term" data-title="Lista proceselor" data-desc="Învață să citești PID, CPU și memorie — nu doar «o listă lungă».">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ps aux | head -n 8", "out": "USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot         1  0.0  0.1 167420 11420 ?        Ss   09:01   0:02 /sbin/init\nroot       512  0.0  0.2  78240 20112 ?        Ss   09:01   0:00 /usr/lib/systemd/systemd-journald\nstudent   2140  0.3  1.8 3452100 148220 ?      Sl   10:12   0:45 /usr/lib/firefox/firefox\nstudent   3011  0.0  0.1  21488  5120 pts/0    Ss   11:00   0:00 bash\nstudent   3099  0.0  0.0  21488  3520 pts/0    R+   11:05   0:00 ps aux"}
+  ],
+  "windows": [
+    {"cmd": "tasklist | more", "out": "Image Name                     PID Session Name        Mem Usage\n========================= ======== ================ ============\nSystem Idle Process              0 Services               8 K\nSystem                           4 Services             148 K\nexplorer.exe                  4820 Console            82,340 K\nchrome.exe                    6104 Console           210,112 K\npowershell.exe                7720 Console            64,220 K"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+### Cum citești ieșirea (pas cu pas)
+
+**Linux — `ps aux`**
+
+| Coloană | Ce înseamnă pentru tine |
+|---|---|
+| `USER` | cine „deține” procesul (`student`, `root`…) |
+| `PID` | numărul procesului — îl folosești la `kill` |
+| `%CPU` | cât procesor consumă acum (relativ) |
+| `%MEM` | câtă memorie (relativ) |
+| `STAT` | stare scurtă: `R` ≈ rulează, `S` ≈ sleep/așteaptă… |
+| `COMMAND` | ce program e |
+
+**Windows — `tasklist`**
+
+| Coloană | Sens |
+|---|---|
+| `Image Name` | numele executabilului |
+| `PID` | același rol ca pe Linux |
+| `Mem Usage` | memorie ocupată |
+
+În PowerShell, `Get-Process` e mai bogat (CPU, WorkingSet). Task Manager e varianta grafică.
+
+> [!TIP]
+> `ps` / `tasklist` = fotografie. `top` / `htop` (Linux) și Task Manager = film live care se actualizează.
+</script>
+
+<div class="term" data-title="PowerShell: Get-Process" data-desc="Filtrează după nume — util când lista e uriașă.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ps -C firefox -o pid,user,%cpu,%mem,cmd", "out": "  PID USER     %CPU %MEM CMD\n 2140 student   0.3  1.8 /usr/lib/firefox/firefox"}
+  ],
+  "windows": [
+    {"cmd": "Get-Process | Where-Object {$_.ProcessName -match 'chrome|powershell'} | Format-Table Id,ProcessName,CPU,WorkingSet -AutoSize", "out": "  Id ProcessName     CPU WorkingSet\n  -- -----------     --- ----------\n6104 chrome       12.45  215154688\n7720 powershell    1.02   65744896"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s3" data-num="3" data-title="Planificarea procesorului">
+<script type="text/markdown">
+### 3.1. De ce avem nevoie de planificator?
+
+Ai un CPU (sau câteva nuclee) și zeci de procese **gata**. Cine intră primul?
+
+**Planificatorul** (*scheduler*) alege următorul proces din coada *ready*. E ca un controlor de trafic aerian: decide cine aterizează pe „pista” CPU.
+
+Criterii pe care le vei auzi la examen / în discuții:
+
+| Criteriu | Întrebarea pe care o răspunde |
+|---|---|
+| timp de așteptare | cât stă procesul la coadă până rulează? |
+| timp de răspuns | cât durează până utilizatorul *simte* o reacție? |
+| throughput | câte procese termină pe secundă / minut? |
+| echitate | evită *starvation* (un proces să nu mai fie servit niciodată) |
+
+Nu există un algoritm perfect pentru toate — de aceea există mai multe strategii.
+
+### 3.2. Algoritmi de bază (cu exemple mentale)
+
+| Algoritm | Cum decide | Plus | Minus |
+|---|---|---|---|
+| **FCFS** (*First Come First Served*) | primul venit, primul servit; fără preempție | foarte simplu | un job lung blochează pe toți din spate (*convoy effect*) |
+| **SJF** (*Shortest Job First*) | rulează mai întâi cel mai scurt | timp mediu de așteptare bun | greu de știut durata dinainte; job-urile lungi pot aștepta mult |
+| **Round Robin (RR)** | fiecare primește un **quantum** (felie de timp), apoi la coadă | bun pentru interactiv (UI, terminal) | quantum prea mic → prea multe context switch-uri |
+| **Priorități** | număr: „mai important” rulează înainte; uneori + *aging* | flexibil | fără aging → starvation |
+
+**Quantum** = cât timp las pe CPU un proces la RR înainte să-l întrerup. Exemplu didactic: 2 unități de timp.
+
+În viața reală, Linux (CFS) și Windows au planificatori **complecși**. Ideile FCFS / RR rămân baza ca să înțelegi de ce „PC-ul nu îngheață” când descarci un fișier.
+</script>
+
+<div class="sim" data-kind="sched" data-title="Simulator: FCFS vs Round Robin" data-desc="Aceleași procese: P1 are de lucru 5, P2 are 3, P3 are 4. La RR, quantum = 2. Apasă Pas de mai multe ori și compară cele două moduri." data-quantum="2"></div>
+
+<script type="text/markdown">
+**Ce să observi în simulator:**
+
+1. Alege **FCFS** → Reset → Pas, Pas… P1 rămâne pe CPU până termină (5 pași). P2 așteaptă.
+2. Alege **Round Robin** → Reset → Pas… După 2 pași, P1 e *preemptat* și intră alt proces. Timpul de răspuns pentru P2/P3 e mai bun.
+
+> [!INFO]
+> „Preemptat” = i s-a luat CPU-ul temporar, deși mai avea de lucru. Nu e o eroare — e politica RR.
+</script>
+</section>
+
+
+<section class="lesson" id="s4" data-num="4" data-title="Comenzi: kill, taskkill, fundal">
+<script type="text/markdown">
+### 4.1. Cum oprești un proces (pas cu pas)
+
+1. Găsești **PID**-ul (`ps`, `tasklist`, Task Manager).
+2. Trimiți o cerere de oprire.
+3. Dacă nu răspunde, forțezi.
+
+| Scop | Linux | Windows |
+|---|---|---|
+| oprire „politicoasă” | `kill PID` → semnal **SIGTERM** | `taskkill /PID 1234` |
+| forțat | `kill -9 PID` → **SIGKILL** | `taskkill /PID 1234 /F` |
+| după nume | `pkill firefox` | `taskkill /IM chrome.exe /F` |
+| PowerShell | — | `Stop-Process -Id 1234 -Force` |
+
+**SIGTERM** = „te rog, închide-te frumos” (poate salva fișierele).  
+**SIGKILL** / `/F` = „te opresc acum” — procesul nu poate refuza.
+
+> [!WARN]
+> Nu ucide procese de sistem la întâmplare. Pe Linux, `kill -9 1` (procesul init/systemd) poate lăsa sistemul într-o stare foarte proastă. Pe Windows, la fel: procesele critice sunt protejate, dar forțarea unor servicii strică sesiunea.
+</script>
+
+<div class="term" data-title="Oprirea unui proces" data-desc="Exemplu didactic: găsești PID-ul, trimiți semnal / taskkill, verifici că a dispărut.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ps -C sleep -o pid,cmd", "out": "  PID CMD\n 4521 sleep 300"},
+    {"cmd": "kill 4521", "out": ""},
+    {"cmd": "ps -C sleep -o pid,cmd", "out": "  PID CMD"},
+    {"cmd": "kill -9 4521", "out": "bash: kill: (4521) - No such process"}
+  ],
+  "windows": [
+    {"cmd": "tasklist /FI \"IMAGENAME eq notepad.exe\"", "out": "Image Name                     PID Session Name        Mem Usage\n========================= ======== ================ ============\nnotepad.exe                   8840 Console             8,192 K"},
+    {"cmd": "taskkill /PID 8840", "out": "SUCCESS: Sent termination signal to the process with PID 8840."},
+    {"cmd": "taskkill /IM notepad.exe /F", "out": "ERROR: The process \"notepad.exe\" with PID 8840 could not be terminated.\nReason: There is no running instance of the task."}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+În exemplul de mai sus, al doilea `kill -9` / `taskkill` eșuează **pentru că procesul deja nu mai există** — semnal că prima oprire a funcționat.
+
+### 4.2. Rulare în fundal
+
+Uneori vrei ca terminalul să-ți rămână liber în timp ce rulează altceva.
+
+| | Linux (bash) | Windows |
+|---|---|---|
+| pornește „în spate” | `comanda &` | `start comanda` sau `Start-Process` |
+| vezi job-urile shell-ului | `jobs` | model diferit (procese separate; PowerShell are și `Start-Job`) |
+| adu în față / fundal | `fg`, `bg` | comuți ferestrele / Task Manager |
+
+Pe Linux, `&` leagă job-ul de sesiunea ta de shell. Pe Windows, `start` deschide de obicei un proces/fereastră **separată**.
+</script>
+
+<div class="term" data-title="Procese în fundal" data-desc="Linux: & + jobs. Windows: start / Start-Process.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "sleep 60 &", "out": "[1] 5102"},
+    {"cmd": "jobs", "out": "[1]+  Running                 sleep 60 &"},
+    {"cmd": "fg %1", "out": "sleep 60"}
+  ],
+  "windows": [
+    {"cmd": "start notepad", "out": ""},
+    {"cmd": "Start-Process notepad", "out": ""}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s5" data-num="5" data-title="Rezumat">
+<script type="text/markdown">
+### Ce ar trebui să poți explica cu voce tare
+
+| Idee | Într-o propoziție |
+|---|---|
+| SO | gestionează resursele și stă între aplicații și hardware |
+| Kernel | partea privilegiată; aplicațiile cer servicii prin syscall |
+| Proces | un program *în execuție*, cu PID |
+| Stări | nou → gata ↔ rulează ↔ blocat → terminat |
+| PCB / context switch | fișa procesului; salvăm/restaurăm registre când schimbăm procesul |
+| Planificare | FCFS, SJF, RR, priorități — compromis între simplitate, așteptare și răspuns |
+| Comenzi | `ps`/`tasklist`, `kill`/`taskkill`, `uname`/`ver`, ajutor `man`/`/?` |
+
+### Tabel rapid Linux ↔ Windows (lecția 1)
+
+| Scop | Linux | Windows |
+|---|---|---|
+| sistem | `uname -a`, `hostname` | `ver`, `systeminfo`, `hostname` |
+| utilizator | `whoami` | `whoami` |
+| ajutor | `man`, `--help` | `help`, `/?` |
+| procese | `ps`, `top` | `tasklist`, `Get-Process` |
+| oprire | `kill`, `kill -9`, `pkill` | `taskkill`, `Stop-Process` |
+| fundal | `comanda &`, `jobs`, `fg`/`bg` | `start`, `Start-Process` |
+</script>
+</section>
+
+
+<section class="lesson" id="s6" data-num="6" data-title="Greșeli frecvente">
+<script type="text/markdown">
+| Greșeală tipică la început | De ce e greșit | Cum gândești corect |
+|---|---|---|
+| „Procesul = fișierul `.exe`” | pe disc e programul; în RAM e procesul | un program, N procese |
+| `kill -9` din prima | nu lași aplicația să salveze | încearcă fără `-9` / fără `/F` |
+| Quantum RR foarte mic | pierzi timp în context switch | compromis (zeci de ms în practică) |
+| „Windows n-are terminal serios” | PowerShell e foarte capabil | exersează aceleași idei pe ambele |
+| Ignori PID-ul | nu poți controla procesul | uită-te întâi la listă (`ps` / `tasklist`) |
+| Confunzi *gata* cu *blocat* | unul așteaptă CPU, celălalt așteaptă I/O | vezi simulatorul de stări |
+</script>
+</section>
+
+
+<section class="lesson" id="s7" data-num="7" data-title="Întrebări de autoverificare">
+<script type="text/markdown">
+Încearcă să răspunzi fără să te uiți. Apoi deschide răspunsul.
+</script>
+
+<details class="qa"><summary>1. Ce două roluri principale are un SO?</summary><div class="qa-a">Gestionează resursele (CPU, memorie, I/O, fișiere) și oferă o interfață între aplicații/utilizator și hardware.</div></details>
+
+<details class="qa"><summary>2. Ce e un apel de sistem?</summary><div class="qa-a">O cerere a unui program din spațiul utilizator către kernel (ex. citire fișier, creare proces), executată în mod privilegiat.</div></details>
+
+<details class="qa"><summary>3. Care e diferența dintre stările gata și blocat?</summary><div class="qa-a"><strong>Gata</strong> = așteaptă CPU (poate rula imediat). <strong>Blocat</strong> = așteaptă un eveniment/I/O; chiar dacă CPU e liber, nu poate continua încă.</div></details>
+
+<details class="qa"><summary>4. Ce salvează SO-ul la un context switch?</summary><div class="qa-a">Starea procesului curent în PCB (registre, contor de program etc.), apoi încarcă starea următorului proces.</div></details>
+
+<details class="qa"><summary>5. De ce Round Robin e mai bun decât FCFS pentru tipărire interactivă?</summary><div class="qa-a">RR preemptă job-urile lungi după un quantum, deci procesele scurte/interactive primesc CPU mai repede (timp de răspuns mai bun).</div></details>
+
+<details class="qa"><summary>6. Ce diferență e între kill și kill -9?</summary><div class="qa-a"><code>kill</code> trimite SIGTERM (închidere cerută, poate fi tratată). <code>kill -9</code> trimite SIGKILL (oprire forțată, nu poate fi ignorată).</div></details>
+
+<details class="qa"><summary>7. Ce coloană din ps/tasklist folosești ca să oprești un proces?</summary><div class="qa-a">PID (Process ID).</div></details>
+
+<details class="qa"><summary>8. Ce face comanda &amp; la finalul unei linii în bash?</summary><div class="qa-a">Rulează comanda în fundal și îți redă promptul; poți vedea job-ul cu <code>jobs</code>.</div></details>
+</section>
+
+
+            <footer class="page-foot">
+                <p>Lecția 1 din planul de curs SO. Ieșirile din terminal sunt <strong>simulate</strong> (exemple tipice) — pe mașina ta vor arăta ușor diferit. Poți copia comenzile și le poți rula în WSL, o VM sau PowerShell.</p>
+            </footer>
+        </main>
+    </div>
+
+    <button class="icon-btn to-top" type="button" aria-label="Înapoi sus">↑ Sus</button>
+    <script src="assets/app.js"></script>
+    <script src="../../assets/course-nav.js"></script>
+</body>
+</html>

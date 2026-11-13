@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Procese și planificare — SO.lab</title>
+    <meta name="description" content="Lecție interactivă: sisteme de operare, procese, planificare și comenzi Linux/Windows în terminal.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+    <link rel="stylesheet" href="assets/app.css">
+    <link rel="stylesheet" href="../../assets/course-nav.css">
+</head>
+<body>
+    <header class="topbar">
+        <button class="icon-btn menu-btn" id="menu" type="button" aria-label="Deschide cuprinsul" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <a class="brand" href="../../index.html">
+            <span class="brand-mark">SO<span>.</span>lab</span>
+            <span class="brand-sub">Lecția 1 · Procese &amp; planificare</span>
+        </a>
+        <div class="topbar-actions">
+            <button class="icon-btn" id="theme" type="button">Temă: auto</button>
+        </div>
+        <span class="progress" aria-hidden="true"></span>
+    </header>
+
+    <button type="button" class="nav-backdrop" id="nav-backdrop" aria-label="Închide meniul" aria-hidden="true"></button>
+    <div class="layout">
+        <aside class="sidebar" id="sidebar" aria-label="Cuprins">
+            <div class="search">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
+                <input id="search" type="search" placeholder="Caută (apasă /)" aria-label="Caută în lecție">
+            </div>
+            <ol class="toc" id="toc"></ol>
+            <p class="toc-empty" id="toc-empty" hidden>Niciun rezultat.</p>
+        </aside>
+
+        <main class="content" id="top">
+            <div class="hero">
+                <span class="kicker">Sisteme de operare · documentație interactivă</span>
+                <h1>Noțiuni de bază, procese și planificare</h1>
+                <p>Lecție pentru începători: ce e un SO, ce e un proces, cum se împarte CPU-ul — plus terminale Linux/Windows pe care le „rulezi” pe loc. Deschide meniul ☰ din stânga pentru cuprins.</p>
+                <div class="hero-stats">
+                    <span class="chip"><b id="stat-sections">0</b> secțiuni</span>
+                    <span class="chip"><b id="stat-demos">0</b> demo-uri</span>
+                    <span class="chip"><b id="stat-qa">0</b> întrebări</span>
+                    <span class="chip">Tasta <b>/</b> căutare</span>
+                </div>
+            </div>
+
+<!-- PARTS -->
+
+            <footer class="page-foot">
+                <p>Lecția 1 din planul de curs SO. Ieșirile din terminal sunt <strong>simulate</strong> (exemple tipice) — pe mașina ta vor arăta ușor diferit. Poți copia comenzile și le poți rula în WSL, o VM sau PowerShell.</p>
+            </footer>
+        </main>
+    </div>
+
+    <button class="icon-btn to-top" type="button" aria-label="Înapoi sus">↑ Sus</button>
+    <script src="assets/app.js"></script>
+    <script src="../../assets/course-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<section class="lesson" id="s2" data-num="2" data-title="Procese: stări, PCB, fire">
+<script type="text/markdown">
+### 2.1. Ce este un proces — analogie
+
+Pe disc ai un **program** (fișier): de exemplu `firefox.exe` sau `/usr/bin/firefox`. E ca o rețetă pe hârtie.
+
+Când îl pornești, SO-ul creează un **proces**: rețeta „gătită” acum — cu ingrediente (date în RAM), ustensile (fișiere deschise) și un număr de comandă (**PID** = *Process ID*).
+
+| | Program | Proces |
+|---|---|---|
+| Unde trăiește | pe disc | în memorie, „viu” |
+| Câte poți avea | un fișier | **mai multe** procese din același program |
+| Identificare | cale / nume fișier | **PID** (număr) |
+
+Poți deschide Firefox de două ori (sau multe tab-uri ca procese/fire): același program, PID-uri diferite.
+
+### 2.2. Stările tipice ale unui proces
+
+Un proces nu rulează mereu. Trece prin stări, ca o persoană la ghișeu:
+
+| Stare | Sens pe limba ta | Exemplu |
+|---|---|---|
+| **nou** | tocmai creat, încă nu e în coadă | ai dat dublu-clic, SO-ul îl pregătește |
+| **gata (ready)** | așteaptă la rând la CPU | vrea să calculeze, dar altcineva e la „casă” |
+| **rulează (running)** | are procesorul acum | calculează / execută instrucțiuni |
+| **blocat (waiting)** | așteaptă altceva, nu CPU | citește de pe disc, așteaptă rețeaua, un click |
+| **terminat** | a terminat; SO-ul curăță | ai închis fereastra |
+
+**Preempție:** planificatorul ia CPU-ul de la un proces care *putea* continua și îl dă altuia (din *rulează* → *gata*). Așa simți multitasking-ul.
+
+> [!INFO]
+> Diferență importantă: **gata** = „pot rula imediat, dă-mi CPU”. **blocat** = „chiar dacă CPU e liber, tot nu pot — aștept I/O”.
+</script>
+
+<div class="sim" data-kind="states" data-title="Simulator: stările unui proces" data-desc="Pornește din «nou». Apasă doar săgețile oferite — vei vedea ce tranziții sunt legale. Din «rulează» poți merge la gata (preempție), blocat (I/O) sau terminat."></div>
+
+<script type="text/markdown">
+### 2.3. PCB și comutarea contextului
+
+Kernelul ține pentru fiecare proces o fișă: **PCB** (*Process Control Block*). Conține, printre altele:
+
+- PID și starea;
+- registrele CPU (unde a rămas execuția);
+- informații despre memorie și fișiere deschise;
+- prioritate.
+
+**Comutarea contextului** (*context switch*) e schimbarea de la procesul A la B:
+
+1. salvează starea lui A în PCB-ul lui A;
+2. planificatorul alege B;
+3. încarcă starea lui B din PCB-ul lui B;
+4. B continuă ca și cum nu s-ar fi oprit.
+
+E utilă, dar **nu e gratuită** — durează microsecunde. De aceea, la Round Robin, dacă tai timpul prea mărunt, pierzi timp doar schimbând procesele.
+
+### 2.4. Proces vs fir de execuție (thread)
+
+Un **fir** e un „fir de execuție” înăuntrul unui proces. Simplificat:
+
+| | Proces | Fir (thread) |
+|---|---|---|
+| Memorie | spațiu propriu (în general izolat de alții) | **partajează** memoria procesului-părinte |
+| Creare | mai grea / mai scumpă | mai ușoară |
+| Imagine | un restaurant întreg | un ospătar în același restaurant |
+
+Un proces are **cel puțin un** fir. Dacă un browser folosește mai multe fire, ele văd aceleași date — rapid, dar trebuie grijă (concurență = lecția 3).
+</script>
+
+<div class="term" data-title="Lista proceselor" data-desc="Învață să citești PID, CPU și memorie — nu doar «o listă lungă».">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ps aux | head -n 8", "out": "USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot         1  0.0  0.1 167420 11420 ?        Ss   09:01   0:02 /sbin/init\nroot       512  0.0  0.2  78240 20112 ?        Ss   09:01   0:00 /usr/lib/systemd/systemd-journald\nstudent   2140  0.3  1.8 3452100 148220 ?      Sl   10:12   0:45 /usr/lib/firefox/firefox\nstudent   3011  0.0  0.1  21488  5120 pts/0    Ss   11:00   0:00 bash\nstudent   3099  0.0  0.0  21488  3520 pts/0    R+   11:05   0:00 ps aux"}
+  ],
+  "windows": [
+    {"cmd": "tasklist | more", "out": "Image Name                     PID Session Name        Mem Usage\n========================= ======== ================ ============\nSystem Idle Process              0 Services               8 K\nSystem                           4 Services             148 K\nexplorer.exe                  4820 Console            82,340 K\nchrome.exe                    6104 Console           210,112 K\npowershell.exe                7720 Console            64,220 K"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+### Cum citești ieșirea (pas cu pas)
+
+**Linux — `ps aux`**
+
+| Coloană | Ce înseamnă pentru tine |
+|---|---|
+| `USER` | cine „deține” procesul (`student`, `root`…) |
+| `PID` | numărul procesului — îl folosești la `kill` |
+| `%CPU` | cât procesor consumă acum (relativ) |
+| `%MEM` | câtă memorie (relativ) |
+| `STAT` | stare scurtă: `R` ≈ rulează, `S` ≈ sleep/așteaptă… |
+| `COMMAND` | ce program e |
+
+**Windows — `tasklist`**
+
+| Coloană | Sens |
+|---|---|
+| `Image Name` | numele executabilului |
+| `PID` | același rol ca pe Linux |
+| `Mem Usage` | memorie ocupată |
+
+În PowerShell, `Get-Process` e mai bogat (CPU, WorkingSet). Task Manager e varianta grafică.
+
+> [!TIP]
+> `ps` / `tasklist` = fotografie. `top` / `htop` (Linux) și Task Manager = film live care se actualizează.
+</script>
+
+<div class="term" data-title="PowerShell: Get-Process" data-desc="Filtrează după nume — util când lista e uriașă.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ps -C firefox -o pid,user,%cpu,%mem,cmd", "out": "  PID USER     %CPU %MEM CMD\n 2140 student   0.3  1.8 /usr/lib/firefox/firefox"}
+  ],
+  "windows": [
+    {"cmd": "Get-Process | Where-Object {$_.ProcessName -match 'chrome|powershell'} | Format-Table Id,ProcessName,CPU,WorkingSet -AutoSize", "out": "  Id ProcessName     CPU WorkingSet\n  -- -----------     --- ----------\n6104 chrome       12.45  215154688\n7720 powershell    1.02   65744896"}
+  ]
+}
+</script>
+</div>
+</section>
