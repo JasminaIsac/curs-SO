@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Comenzi Windows — SO.lab</title>
+    <meta name="description" content="Lecție practică: navigare, fișiere, directoare, căutare în CMD și PowerShell — cu terminale simulate.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+    <link rel="stylesheet" href="assets/app.css">
+    <link rel="stylesheet" href="../../assets/course-nav.css">
+</head>
+<body>
+    <header class="topbar">
+        <button class="icon-btn menu-btn" id="menu" type="button" aria-label="Deschide temele" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <a class="brand" href="../../index.html">
+            <span class="brand-mark">SO<span>.</span>lab</span>
+            <span class="brand-sub">Lecția 3 · Comenzi Windows</span>
+        </a>
+        <div class="topbar-actions">
+            <button class="icon-btn" id="theme" type="button">Temă: auto</button>
+        </div>
+        <span class="progress" aria-hidden="true"></span>
+    </header>
+<div class="layout">
+        <aside class="sidebar" id="sidebar" aria-label="Teme curs">
+            <div class="search">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
+                <input id="search" type="search" placeholder="Caută temă (/)" aria-label="Caută temă">
+            </div>
+            <ol class="toc" id="toc"></ol>
+            <p class="toc-empty" id="toc-empty" hidden>Niciun rezultat.</p>
+        </aside>
+
+        <main class="content" id="top">
+            <div class="hero">
+                <span class="kicker">Sisteme de operare · documentație interactivă</span>
+                <h1>Comenzi Windows: CMD, PowerShell și echivalente</h1>
+                <p>Același tipar ca lecția Linux, pe Windows: navigare, creare, copiere, ștergere, citire, căutare și redirectare — plus utilizatorul curent și privilegii. Fiecare demo are tab-uri <strong>CMD</strong> și <strong>PowerShell</strong>.</p>
+                <div class="hero-stats">
+                    <span class="chip"><b id="stat-sections">0</b> secțiuni</span>
+                    <span class="chip"><b id="stat-demos">0</b> demo-uri</span>
+                    <span class="chip"><b id="stat-qa">0</b> întrebări</span>
+                    <span class="chip">Teme curs · <b>/</b></span>
+                </div>
+            </div>
+
+<section class="lesson" id="s0" data-num="0" data-title="Obiective">
+<script type="text/markdown">
+### Ce veți învăța
+
+Lecție **practică**: comenzile Windows pe care le folosiți zilnic în **CMD** și **PowerShell** când lucrați cu fișiere și directoare.
+
+| Bloc | Conținut |
+|---|---|
+| Orientare | `cd`, `dir` / `Get-ChildItem` |
+| Modificare | `mkdir`, `New-Item`, `copy`, `move`, `del` |
+| Citire & căutare | `type` / `Get-Content`, `dir /s`, `findstr` / `Select-String` |
+| Extra | redirectare, `tree`, spațiu pe disc, **utilizator & privilegii** |
+
+Fiecare comandă importantă are un **terminal simulat** (etichetă Windows — fără comutator Linux).
+
+> [!TIP]
+> Deschideți **Windows PowerShell** sau **Terminal** (Windows 11). Multe comenzi CMD (`dir`, `cd`, `copy`) funcționează și în PowerShell.
+</script>
+</section>
+
+
+<section class="lesson" id="s1" data-num="1" data-title="Noțiuni scurte">
+<script type="text/markdown">
+### CMD vs PowerShell
+
+| | **CMD** | **PowerShell** |
+|---|---|---|
+| Ideea | shell clasic Windows | shell modern + limbaj de scripting |
+| Prompt tipic | `C:\Users\Student>` | `PS C:\Users\Student>` |
+| Listare | `dir` | `dir` sau `Get-ChildItem` (`ls`, `gci`) |
+| Citire | `type` | `Get-Content` (`cat`, `gc`) |
+
+În demo-uri folosim stil **PowerShell**; unde diferă, menționăm și varianta CMD.
+
+### Fișier, folder, cale
+
+| Concept | Semnificație |
+|---|---|
+| **Fișier** | date pe disc |
+| **Folder** (director) | container pentru fișiere și alte foldere |
+| **Cale absolută** | începe cu litera unității (ex. `C:\Users\Student\docs`) |
+| **Cale relativă** | față de folderul curent (ex. `docs\a.txt`, `..`) |
+| **`%USERPROFILE%`** / `$HOME` | folderul home al utilizatorului |
+
+### Reguli importante pe Windows
+
+1. **Case-insensitive** în general: `Note.txt` și `note.txt` sunt același nume pe NTFS tipic.
+2. Separatorul de cale e `\` (în PowerShell funcționează adesea și `/`).
+3. **`del` / `Remove-Item`** din terminal **nu** trimit în Coșul de reciclare (spre deosebire de Ștergere din Explorer).
+4. Spațiile în nume: ghilimele — `"Proiect nou"`.
+
+### Orientare pe disc
+
+| Cale | Rol tipic |
+|---|---|
+| `C:\` | rădăcina unității de sistem |
+| `C:\Users\` | profilurile utilizatorilor |
+| `C:\Windows\` | fișierele sistemului |
+| `C:\Program Files\` | aplicații instalate |
+</script>
+</section>
+
+
+<section class="lesson" id="s2" data-num="2" data-title="Orientare: cd">
+<script type="text/markdown">
+### Directorul curent și navigarea
+
+| Comandă | Rol |
+|---|---|
+| `cd` (gol) / `Get-Location` / `pwd` | afișează folderul curent |
+| `cd cale` | schimbă folderul curent |
+| `cd ..` | un nivel în sus |
+| `cd ~` sau `cd $HOME` | revine în home (PowerShell) |
+| `cd \` | rădăcina unității curente |
+
+În CMD, `cd` fără argumente afișează calea; în PowerShell preferați `Get-Location` sau `pwd`.
+</script>
+
+<div class="term" data-title="cd — director curent" data-desc="Aceleași idei în CMD și PowerShell; sintaxa diferă puțin.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "cd", "out": "C:\\Users\\Student"},
+    {"cmd": "cd Documents", "out": ""},
+    {"cmd": "cd", "out": "C:\\Users\\Student\\Documents"},
+    {"cmd": "cd ..", "out": ""},
+    {"cmd": "cd C:\\Windows", "out": ""},
+    {"cmd": "cd", "out": "C:\\Windows"},
+    {"cmd": "cd %USERPROFILE%", "out": ""},
+    {"cmd": "cd", "out": "C:\\Users\\Student"}
+  ],
+  "powershell": [
+    {"cmd": "Get-Location", "out": "\nPath\n----\nC:\\Users\\Student"},
+    {"cmd": "cd Documents", "out": ""},
+    {"cmd": "pwd", "out": "\nPath\n----\nC:\\Users\\Student\\Documents"},
+    {"cmd": "cd ..", "out": ""},
+    {"cmd": "cd C:\\Windows", "out": ""},
+    {"cmd": "Get-Location", "out": "\nPath\n----\nC:\\Windows"},
+    {"cmd": "cd ~", "out": ""},
+    {"cmd": "pwd", "out": "\nPath\n----\nC:\\Users\\Student"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!INFO]
+> Dacă `cd` reușește, de obicei **nu afișează nimic** — verificați cu `pwd` / `Get-Location`.
+</script>
+</section>
+
+
+<section class="lesson" id="s3" data-num="3" data-title="Listare: dir">
+<script type="text/markdown">
+### Variante utile de `dir` / `Get-ChildItem`
+
+| Comandă | Ce face |
+|---|---|
+| `dir` | listează fișierele și folderele din folderul curent |
+| `dir /a` | include și cele ascunse / de sistem (CMD) |
+| `dir /w` | afișare pe lățime (doar nume) |
+| `dir /s` | recursiv (și subfolderele) |
+| `Get-ChildItem` | echivalent PowerShell (`gci`, `ls`) |
+| `Get-ChildItem -Force` | include elemente ascunse |
+| `Get-ChildItem -Recurse` | recursiv |
+</script>
+
+<div class="term" data-title="dir / Get-ChildItem" data-desc="Listare în CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "dir", "out": " Volume in drive C has no label.\n Directory of C:\\Users\\Student\n\n11/10/2025  09:12 AM    <DIR>          Documents\n11/11/2025  02:01 PM    <DIR>          Downloads\n11/14/2025  06:30 PM               220 notes.txt\n11/14/2025  07:00 PM    <DIR>          proiect\n               1 File(s)            220 bytes\n               3 Dir(s)"},
+    {"cmd": "dir /a", "out": " Directory of C:\\Users\\Student\n\n11/10/2025  09:12 AM    <DIR>          .\n11/10/2025  09:12 AM    <DIR>          ..\n11/09/2025  08:00 AM    <DIR>          AppData\n11/10/2025  09:12 AM    <DIR>          Documents\n11/11/2025  02:01 PM    <DIR>          Downloads\n11/14/2025  06:30 PM               220 notes.txt\n11/14/2025  07:00 PM    <DIR>          proiect"},
+    {"cmd": "dir /s /b proiect\\*.cs", "out": "C:\\Users\\Student\\proiect\\src\\main.cs"}
+  ],
+  "powershell": [
+    {"cmd": "dir", "out": "\n    Directory: C:\\Users\\Student\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\nd----          11/10/2025   9:12 AM                Documents\nd----          11/11/2025   2:01 PM                Downloads\n-a---          11/14/2025   6:30 PM            220 notes.txt\nd----          11/14/2025   7:00 PM                proiect"},
+    {"cmd": "Get-ChildItem -Force | Select-Object Mode, Name", "out": "\nMode  Name\n----  ----\nd--h- AppData\nd---- Documents\nd---- Downloads\n-a--- notes.txt\nd---- proiect"},
+    {"cmd": "Get-ChildItem proiect -Recurse -Name", "out": "docs\nsrc\nsrc\\main.cs\ndocs\\readme.md"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s4" data-num="4" data-title="Creare: mkdir și New-Item">
+<script type="text/markdown">
+### Directoare și fișiere noi
+
+| Comandă | Rol |
+|---|---|
+| `mkdir nume` / `md nume` | creează un folder |
+| `mkdir a\b\c` | în PowerShell creează și părinții lipsă; în CMD folosiți lanțuri sau `mkdir` pe etape |
+| `New-Item -ItemType File -Name a.txt` | creează un fișier gol (PowerShell) |
+| `type nul > a.txt` | creează / golește un fișier (CMD) |
+| `ni a.txt` | alias scurt PowerShell pentru `New-Item` |
+</script>
+
+<div class="term" data-title="mkdir — creare" data-desc="Structură de proiect: CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "mkdir proiect\\src", "out": ""},
+    {"cmd": "mkdir proiect\\docs", "out": ""},
+    {"cmd": "type nul > proiect\\src\\main.cs", "out": ""},
+    {"cmd": "type nul > notes.txt", "out": ""},
+    {"cmd": "dir proiect", "out": " Directory of C:\\Users\\Student\\proiect\n\n11/15/2025  12:00 AM    <DIR>          docs\n11/15/2025  12:00 AM    <DIR>          src"}
+  ],
+  "powershell": [
+    {"cmd": "mkdir proiect\\src, proiect\\docs", "out": "\n    Directory: C:\\Users\\Student\\proiect\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\nd----          11/15/2025  12:00 AM                src\nd----          11/15/2025  12:00 AM                docs"},
+    {"cmd": "New-Item -ItemType File -Path proiect\\src\\main.cs", "out": "\n    Directory: C:\\Users\\Student\\proiect\\src\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a---          11/15/2025  12:00 AM              0 main.cs"},
+    {"cmd": "New-Item notes.txt -ItemType File", "out": "\n    Directory: C:\\Users\\Student\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a---          11/15/2025  12:00 AM              0 notes.txt"},
+    {"cmd": "dir proiect", "out": "\n    Directory: C:\\Users\\Student\\proiect\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\nd----          11/15/2025  12:00 AM                docs\nd----          11/15/2025  12:00 AM                src"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s5" data-num="5" data-title="Copiere și mutare: copy, move">
+<script type="text/markdown">
+### Copiere, mutare, redenumire
+
+| Comandă | Rol |
+|---|---|
+| `copy sursa dest` | copiază un fișier (CMD / PS) |
+| `Copy-Item sursa dest` | PowerShell; `-Recurse` pentru foldere |
+| `xcopy` / `robocopy` | copiere avansată de arbori (pe scurt: lab / backup) |
+| `move sursa dest` | mută sau redenumește |
+| `Move-Item` / `Rename-Item` | echivalente PowerShell |
+| `ren vechi nou` | redenumire (CMD) |
+
+`move fisier.txt folder\` mută în folder; `move a.txt b.txt` redenumește.
+</script>
+
+<div class="term" data-title="copy / move" data-desc="Copiere, redenumire și mutare — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "copy notes.txt arhiva\\backup.txt", "out": "        1 file(s) copied."},
+    {"cmd": "dir arhiva", "out": " Directory of C:\\Users\\Student\\arhiva\n\n11/14/2025  06:30 PM               220 backup.txt"},
+    {"cmd": "ren notes.txt lab-notes.txt", "out": ""},
+    {"cmd": "move lab-notes.txt Documents\\", "out": "        1 file(s) moved."},
+    {"cmd": "dir Documents\\lab-notes.txt", "out": " Directory of C:\\Users\\Student\\Documents\n\n11/14/2025  06:30 PM               220 lab-notes.txt"}
+  ],
+  "powershell": [
+    {"cmd": "Copy-Item notes.txt arhiva\\backup.txt", "out": ""},
+    {"cmd": "dir arhiva", "out": "\n    Directory: C:\\Users\\Student\\arhiva\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a---          11/14/2025   6:30 PM            220 backup.txt"},
+    {"cmd": "Move-Item notes.txt lab-notes.txt", "out": ""},
+    {"cmd": "Move-Item lab-notes.txt Documents\\", "out": ""},
+    {"cmd": "dir Documents\\lab-notes.txt", "out": "\n    Directory: C:\\Users\\Student\\Documents\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a---          11/14/2025   6:30 PM            220 lab-notes.txt"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s6" data-num="6" data-title="Ștergere: del, rmdir">
+<script type="text/markdown">
+### Ștergerea fișierelor și folderelor
+
+| Comandă | Rol |
+|---|---|
+| `del fisier` / `Erase` | șterge fișier(e) |
+| `rmdir folder` / `rd folder` | șterge un folder **gol** |
+| `rmdir /s folder` | șterge folder cu tot conținutul (CMD; cere confirmare) |
+| `Remove-Item fisier` | PowerShell |
+| `Remove-Item folder -Recurse -Force` | folder cu conținut, fără întrebări |
+
+> [!WARN]
+> Din terminal, ștergerea e de obicei **definitivă** (fără Coș). Nu rulați `rmdir /s` sau `Remove-Item -Recurse` pe căi importante.
+</script>
+
+<div class="term" data-title="del / Remove-Item" data-desc="Ștergere fișier și folder — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "type nul > tmp.txt", "out": ""},
+    {"cmd": "mkdir gol", "out": ""},
+    {"cmd": "del tmp.txt", "out": ""},
+    {"cmd": "rmdir gol", "out": ""},
+    {"cmd": "mkdir vechi\\a & type nul > vechi\\a\\x.txt", "out": ""},
+    {"cmd": "rmdir /s /q vechi", "out": ""},
+    {"cmd": "if exist vechi (echo DA) else (echo NU)", "out": "NU"}
+  ],
+  "powershell": [
+    {"cmd": "New-Item tmp.txt, gol -ItemType File, Directory | Out-Null", "out": ""},
+    {"cmd": "Remove-Item tmp.txt", "out": ""},
+    {"cmd": "Remove-Item gol", "out": ""},
+    {"cmd": "mkdir vechi\\a | Out-Null; New-Item vechi\\a\\x.txt -ItemType File | Out-Null", "out": ""},
+    {"cmd": "Remove-Item vechi -Recurse -Force", "out": ""},
+    {"cmd": "Test-Path vechi", "out": "False"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s7" data-num="7" data-title="Citire: type, Get-Content">
+<script type="text/markdown">
+### Conținutul fișierelor
+
+| Comandă | Rol |
+|---|---|
+| `type fisier` | afișează tot conținutul (CMD; merge și în PS) |
+| `more fisier` | paginare (CMD) |
+| `Get-Content fisier` | PowerShell (`cat`, `gc`) |
+| `Get-Content fisier -TotalCount 2` | primele 2 linii (ca `head`) |
+| `Get-Content fisier -Tail 2` | ultimele 2 linii (ca `tail`) |
+</script>
+
+<div class="term" data-title="type / Get-Content" data-desc="Citire completă vs început/sfârșit — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "type notes.txt", "out": "Lab SO - comenzi Windows\n1) cd, dir\n2) mkdir, New-Item\n3) copy, move, del\n4) findstr, Select-String"},
+    {"cmd": "more notes.txt", "out": "Lab SO - comenzi Windows\n1) cd, dir\n2) mkdir, New-Item\n3) copy, move, del\n4) findstr, Select-String"}
+  ],
+  "powershell": [
+    {"cmd": "Get-Content notes.txt", "out": "Lab SO - comenzi Windows\n1) cd, dir\n2) mkdir, New-Item\n3) copy, move, del\n4) findstr, Select-String"},
+    {"cmd": "Get-Content notes.txt -TotalCount 2", "out": "Lab SO - comenzi Windows\n1) cd, dir"},
+    {"cmd": "Get-Content notes.txt -Tail 2", "out": "3) copy, move, del\n4) findstr, Select-String"},
+    {"cmd": "type notes.txt", "out": "Lab SO - comenzi Windows\n1) cd, dir\n2) mkdir, New-Item\n3) copy, move, del\n4) findstr, Select-String"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s8" data-num="8" data-title="Căutare fișiere: dir /s">
+<script type="text/markdown">
+### Găsirea fișierelor după nume / model
+
+| Comandă | Rol |
+|---|---|
+| `dir /s *.txt` | caută `*.txt` în folderul curent și subfoldere (CMD) |
+| `Get-ChildItem -Recurse -Filter *.txt` | echivalent PowerShell |
+| `Get-ChildItem -Recurse -Include *.cs` | filtrare pe mai multe modele |
+| `where.exe notepad` | unde e un executabil în PATH |
+</script>
+
+<div class="term" data-title="Căutare fișiere" data-desc="După extensie — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "dir /s /b proiect\\*.cs", "out": "C:\\Users\\Student\\proiect\\src\\main.cs"},
+    {"cmd": "dir /s /b *.txt", "out": "C:\\Users\\Student\\notes.txt\nC:\\Users\\Student\\arhiva\\backup.txt"},
+    {"cmd": "dir /s /b /ad proiect", "out": "C:\\Users\\Student\\proiect\\docs\nC:\\Users\\Student\\proiect\\src"}
+  ],
+  "powershell": [
+    {"cmd": "Get-ChildItem proiect -Recurse -Filter *.cs | Select-Object -ExpandProperty FullName", "out": "C:\\Users\\Student\\proiect\\src\\main.cs"},
+    {"cmd": "Get-ChildItem . -Recurse -Filter *.txt | Select-Object -ExpandProperty FullName", "out": "C:\\Users\\Student\\notes.txt\nC:\\Users\\Student\\arhiva\\backup.txt"},
+    {"cmd": "Get-ChildItem proiect -Directory -Recurse | Select-Object -ExpandProperty FullName", "out": "C:\\Users\\Student\\proiect\\docs\nC:\\Users\\Student\\proiect\\src"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s9" data-num="9" data-title="Căutare în text: findstr">
+<script type="text/markdown">
+### Căutarea unui șir în fișiere
+
+| Comandă | Rol |
+|---|---|
+| `findstr text fisier` | liniile care conțin `text` (CMD) |
+| `findstr /n text fisier` | + numărul liniei |
+| `findstr /i text fisier` | ignoră majuscule/minuscule |
+| `findstr /s /i text *.txt` | recursiv în `*.txt` |
+| `Select-String -Path fisier -Pattern text` | PowerShell (`sls`) |
+| `Select-String -Path * -Pattern text -Recurse` | recursiv |
+</script>
+
+<div class="term" data-title="findstr / Select-String" data-desc="Căutare în text — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "findstr mkdir notes.txt", "out": "2) mkdir, New-Item"},
+    {"cmd": "findstr /n findstr notes.txt", "out": "4:4) findstr, Select-String"},
+    {"cmd": "findstr /s /i Main proiect\\src\\*.cs", "out": "proiect\\src\\main.cs:using System;\nproiect\\src\\main.cs:static void Main()"}
+  ],
+  "powershell": [
+    {"cmd": "findstr mkdir notes.txt", "out": "2) mkdir, New-Item"},
+    {"cmd": "Select-String -Path notes.txt -Pattern \"findstr\"", "out": "\nnotes.txt:4:4) findstr, Select-String"},
+    {"cmd": "Select-String -Path proiect\\src\\*.cs -Pattern \"Main\"", "out": "\nproiect\\src\\main.cs:1:using System;\nproiect\\src\\main.cs:3:static void Main()"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!TIP]
+> Combinație frecventă: `dir \| findstr "proiect"` — filtrează liniile din listare (conductă, vezi secțiunea următoare).
+</script>
+</section>
+
+
+<section class="lesson" id="s10" data-num="10" data-title="Redirectare și conducte">
+<script type="text/markdown">
+### `>`, `>>` și `|`
+
+| Sintaxă | Rol |
+|---|---|
+| `comanda > fisier` | scrie ieșirea în fișier (**suprascrie**) |
+| `comanda >> fisier` | **adaugă** la sfârșitul fișierului |
+| `cmd1 \| cmd2` | ieșirea lui `cmd1` devine intrarea lui `cmd2` |
+
+În PowerShell, obiectele trec pe conductă (nu doar text) — pentru început, tratați `|` ca pe un filtru.
+</script>
+
+<div class="term" data-title="Redirectare și pipe" data-desc="Salvare și filtrare — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "dir /b > lista.txt", "out": ""},
+    {"cmd": "type lista.txt", "out": "Documents\nDownloads\narhiva\nlista.txt\nnotes.txt\nproiect"},
+    {"cmd": "echo --- >> lista.txt", "out": ""},
+    {"cmd": "dir /b | findstr /i \"^p\"", "out": "proiect"},
+    {"cmd": "findstr /c:\"Lab\" notes.txt | find /c /v \"\"", "out": "1"}
+  ],
+  "powershell": [
+    {"cmd": "Get-ChildItem -Name > lista.txt", "out": ""},
+    {"cmd": "Get-Content lista.txt", "out": "Documents\nDownloads\narhiva\nlista.txt\nnotes.txt\nproiect"},
+    {"cmd": "Add-Content lista.txt \"---\"", "out": ""},
+    {"cmd": "Get-ChildItem -Name | Select-String \"^p\"", "out": "\nproiect"},
+    {"cmd": "Select-String -Path notes.txt -Pattern \"Lab\" | Measure-Object | Select-Object -ExpandProperty Count", "out": "1"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s11" data-num="11" data-title="Bonus: tree și spațiu pe disc">
+<script type="text/markdown">
+### Vizualizare și resurse
+
+| Comandă | Rol |
+|---|---|
+| `tree` | afișează arborele de foldere |
+| `tree /F` | arborele + numele fișierelor |
+| `Get-PSDrive C` | spațiu pe unitatea C: (PowerShell) |
+| `fsutil volume diskfree C:` | spațiu liber (necesită adesea privilegii) |
+| Task Manager | GUI: procese, CPU, memorie (nu e comandă) |
+
+Pentru procese din terminal: `tasklist`, `Get-Process` (revedeți lecția 1).
+</script>
+
+<div class="term" data-title="tree și spațiu" data-desc="Arbore și spațiu pe disc — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "tree proiect /F", "out": "Folder PATH listing\nVolume serial number is 0000-0000\nC:\\USERS\\STUDENT\\PROIECT\n├───docs\n│       readme.md\n└───src\n        main.cs"},
+    {"cmd": "wmic logicaldisk where \"DeviceID='C:'\" get Size,FreeSpace", "out": "FreeSpace     Size\n92000000000   256000000000"}
+  ],
+  "powershell": [
+    {"cmd": "tree proiect /F", "out": "Folder PATH listing\nVolume serial number is 0000-0000\nC:\\USERS\\STUDENT\\PROIECT\n├───docs\n│       readme.md\n└───src\n        main.cs"},
+    {"cmd": "Get-PSDrive C | Format-Table Name, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,1)}}, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,1)}}", "out": "\nName Used(GB) Free(GB)\n---- -------- --------\nC        42.3     85.7"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s12" data-num="12" data-title="Utilizatorul curent și privilegii">
+<script type="text/markdown">
+### Cine sunteți pe sistem
+
+| Comandă | Rol |
+|---|---|
+| `whoami` | utilizatorul curent (`DOMENIU\user` sau `PC\user`) |
+| `whoami /groups` | grupurile din care faceți parte |
+| `whoami /priv` | privilegiile din sesiunea curentă |
+| `$env:USERNAME` | doar numele de utilizator (PowerShell) |
+| `[System.Security.Principal.WindowsIdentity]::GetCurrent().Name` | identitatea completă (.NET) |
+
+### Ce sistem rulați: `ver` și `systeminfo`
+
+După `whoami`, verificați **versiunea Windows** și un rezumat al mașinii.
+
+| Comandă | Rol |
+|---|---|
+| `ver` | versiunea OS pe scurt (rapid, în CMD / PowerShell) |
+| `systeminfo` | raport detaliat: nume OS, versiune, memorie, plăci de rețea, timp de funcționare… |
+| `systeminfo \| findstr /B /C:\"OS Name\" /C:\"OS Version\" /C:\"Total Physical Memory\"` | extrage doar câteva linii utile |
+
+`ver` e suficient pentru „ce Windows am”. `systeminfo` e lung — filtrați cu `findstr` sau `Select-String` când căutați un câmp anume.
+
+Pe Linux, ideea similară: `uname -a` / `cat /etc/os-release` (lecția 2).
+
+### Drepturi pe fișiere (ideea, pe scurt)
+
+Windows folosește **ACL** (*Access Control List*): pe fiecare fișier/folder, o listă „cine poate ce” (citire, scriere, modificare, control total).
+
+| Comandă / acțiune | Rol |
+|---|---|
+| `icacls fisier` | afișează ACL-urile |
+| `icacls fisier /grant User:R` | acordă citire |
+| `icacls fisier /grant User:F` | control total (*Full*) |
+| Proprietăți → Securitate (Explorer) | același model, vizual |
+
+Nu aprofundăm ACL-uri aici — rețineți: pe Windows drepturile sunt pe **utilizator/grup**, nu doar cele 9 litere `rwx` de pe Linux.
+
+### Administrator și UAC
+
+Unele acțiuni (instalări, modificări în `C:\Windows`, unele servicii) cer **Run as administrator**.
+
+| Concept | Semnificație |
+|---|---|
+| **UAC** | *User Account Control* — Windows cere confirmare înainte de acțiuni elevate |
+| Click dreapta → Run as administrator | pornește programul cu privilegii elevate |
+| PowerShell ca Admin | fereastră separată; promptul poate arăta altfel |
+
+> [!WARN]
+> Nu rulați comenzi necunoscute într-un PowerShell „ca Administrator”. Echivalentul mental al `sudo` pe Windows e sesiunea elevată — greșelile afectează tot sistemul.
+</script>
+
+<div class="term" data-title="whoami, ver, systeminfo, icacls" data-desc="Identitate și versiune OS — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "whoami", "out": "desktop-lab\\student"},
+    {"cmd": "whoami /groups | findstr /i \"Administrators Users\"", "out": "BUILTIN\\Administrators          Alias            S-1-5-32-544\nBUILTIN\\Users                   Alias            S-1-5-32-545"},
+    {"cmd": "echo %USERNAME%", "out": "Student"},
+    {"cmd": "ver", "out": "\nMicrosoft Windows [Version 10.0.26200.6584]"},
+    {"cmd": "systeminfo | findstr /B /C:\"OS Name\" /C:\"OS Version\" /C:\"Total Physical Memory\"", "out": "OS Name:                   Microsoft Windows 11 Pro\nOS Version:                10.0.26200 N/A Build 26200\nTotal Physical Memory:     16,272 MB"},
+    {"cmd": "icacls notes.txt", "out": "notes.txt DESKTOP-LAB\\Student:(M)\n         BUILTIN\\Administrators:(F)\n         NT AUTHORITY\\SYSTEM:(F)\nSuccessfully processed 1 files; Failed processing 0 files"}
+  ],
+  "powershell": [
+    {"cmd": "whoami", "out": "desktop-lab\\student"},
+    {"cmd": "whoami /groups | findstr /i \"Administrators Users\"", "out": "BUILTIN\\Administrators          Alias            S-1-5-32-544\nBUILTIN\\Users                   Alias            S-1-5-32-545"},
+    {"cmd": "$env:USERNAME", "out": "Student"},
+    {"cmd": "ver", "out": "\nMicrosoft Windows [Version 10.0.26200.6584]"},
+    {"cmd": "systeminfo | Select-String -Pattern 'OS Name','OS Version','Total Physical Memory'", "out": "\nOS Name:                   Microsoft Windows 11 Pro\nOS Version:                10.0.26200 N/A Build 26200\nTotal Physical Memory:     16,272 MB"},
+    {"cmd": "icacls notes.txt", "out": "notes.txt DESKTOP-LAB\\Student:(M)\n         BUILTIN\\Administrators:(F)\n         NT AUTHORITY\\SYSTEM:(F)\nSuccessfully processed 1 files; Failed processing 0 files"},
+    {"cmd": "icacls notes.txt /grant Student:R", "out": "processed file: notes.txt\nSuccessfully processed 1 files; Failed processing 0 files"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!TIP]
+> `whoami` există și pe Linux, și pe Windows — util ca primă verificare pe orice mașină. Pentru privilegiile elevate pe Windows, folosiți o fereastră **Run as administrator**, nu un prefix de tip `sudo` în CMD clasic.
+</script>
+</section>
+
+
+<section class="lesson" id="s13" data-num="13" data-title="Punte către Linux">
+<script type="text/markdown">
+### Aceeași operație pe Linux (lecția 2)
+
+| Operație | Windows (acum) | Linux (lecția 2) |
+|---|---|---|
+| Director curent | `cd` / `Get-Location` | `pwd` |
+| Navigare | `cd`, `cd ..` | `cd`, `cd ..` |
+| Listare | `dir`, `Get-ChildItem` | `ls -l` |
+| Creare dir | `mkdir` | `mkdir` |
+| Creare fișier | `New-Item` / `type nul >` | `touch` |
+| Copiere | `copy`, `Copy-Item` | `cp`, `cp -r` |
+| Mutare | `move`, `Move-Item` | `mv` |
+| Ștergere | `del`, `Remove-Item -Recurse` | `rm`, `rm -r` |
+| Citire | `type`, `Get-Content` | `cat` |
+| Căutare text | `findstr`, `Select-String` | `grep` |
+| Căutare fișiere | `dir /s`, `Get-ChildItem -Recurse` | `find` |
+| Identitate | `whoami` | `whoami` |
+| Versiune OS | `ver`, `systeminfo` | `uname -a`, `/etc/os-release` |
+| Privilegii | Run as administrator / UAC | `sudo` |
+| Drepturi fișier | ACL / `icacls` | `rwx` / `chmod` |
+
+Ideea e aceeași; diferă sintaxa, case-sensitivity și modelul de permisiuni.
+</script>
+</section>
+
+
+<section class="lesson" id="s14" data-num="14" data-title="Rezumat">
+<script type="text/markdown">
+### Setul minim de reținut
+
+| Scop | Comenzi |
+|---|---|
+| Unde sunt / mă mut | `cd`, `Get-Location` / `pwd` |
+| Ce e aici | `dir`, `Get-ChildItem` |
+| Creez | `mkdir`, `New-Item` |
+| Copiez / mut | `copy` / `Copy-Item`, `move` / `Move-Item` |
+| Șterg | `del`, `Remove-Item` (`-Recurse`) |
+| Citesc | `type`, `Get-Content` (`-TotalCount`, `-Tail`) |
+| Caut | `dir /s`, `findstr`, `Select-String` |
+| Redirectez | `>`, `>>`, `\|` |
+| Cine sunt / sistem | `whoami`, `ver`, `systeminfo` |
+| Drepturi | `icacls`, Run as administrator |
+
+Flux tipic: `pwd` → `dir` → `cd` → creezi/modifici → verifici → cauți cu `findstr` / `Select-String` dacă e nevoie.
+</script>
+</section>
+
+
+<section class="lesson" id="s15" data-num="15" data-title="Autoverificare">
+<script type="text/markdown">
+Răspundeți mai întâi singuri, apoi deschideți soluția.
+</script>
+
+<details class="qa"><summary>1. Ce diferență e între CMD și PowerShell, pe scurt?</summary><div class="qa-a">CMD e shell-ul clasic; PowerShell e modern și poate lucra cu <strong>obiecte</strong> pe conductă, plus cmdlet-uri ca <code>Get-ChildItem</code>.</div></details>
+
+<details class="qa"><summary>2. Ce face <code>cd ..</code>?</summary><div class="qa-a">Urcă <strong>un nivel</strong> în ierarhia de foldere.</div></details>
+
+<details class="qa"><summary>3. Cum listați și fișierele ascunse în PowerShell?</summary><div class="qa-a"><code>Get-ChildItem -Force</code> (sau <code>dir -Force</code>).</div></details>
+
+<details class="qa"><summary>4. <code>Move-Item a.txt b.txt</code> — ce s-a întâmplat?</summary><div class="qa-a">Fișierul a fost <strong>redenumit</strong> (sau mutat, dacă <code>b.txt</code> ar fi fost un folder).</div></details>
+
+<details class="qa"><summary>5. De ce e periculos <code>Remove-Item folder -Recurse -Force</code>?</summary><div class="qa-a">Șterge recursiv, adesea <strong>fără confirmare</strong> și fără Coșul de reciclare.</div></details>
+
+<details class="qa"><summary>6. Ce face <code>findstr /n "error" log.txt</code>?</summary><div class="qa-a">Afișează liniile din <code>log.txt</code> care conțin <code>error</code>, cu <strong>numărul liniei</strong>.</div></details>
+
+<details class="qa"><summary>7. Ce diferență e între <code>&gt;</code> și <code>&gt;&gt;</code>?</summary><div class="qa-a"><code>&gt;</code> suprascrie; <code>&gt;&gt;</code> adaugă la sfârșit.</div></details>
+
+<details class="qa"><summary>8. Ce afișează <code>whoami</code>?</summary><div class="qa-a">Utilizatorul curent, de forma <code>PC\user</code> sau <code>DOMENIU\user</code>.</div></details>
+
+<details class="qa"><summary>9. Cum vedeți drepturile ACL pe un fișier?</summary><div class="qa-a">Cu <code>icacls fisier</code> (sau Proprietăți → Securitate în Explorer).</div></details>
+
+<details class="qa"><summary>10. Care e echivalentul practic al <code>sudo</code> pe Windows?</summary><div class="qa-a">O sesiune <strong>Run as administrator</strong> (UAC) — nu un prefix standard în CMD ca pe Linux.</div></details>
+</section>
+
+
+            <footer class="page-foot">
+                <p>Lecția 3 din planul de curs SO. Ieșirile din terminal sunt <strong>simulate</strong>, separate pe <strong>CMD</strong> și <strong>PowerShell</strong>. Copiați comenzile și rulați-le în shell-ul ales. Echivalentele Linux — în lecția 2.</p>
+            </footer>
+        </main>
+    </div>
+
+    <button class="icon-btn to-top" type="button" aria-label="Înapoi sus">↑ Sus</button>
+    <script src="assets/app.js"></script>
+    <script src="../../assets/course-nav.js"></script>
+</body>
+</html>

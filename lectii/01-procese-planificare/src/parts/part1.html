@@ -1,141 +1,125 @@
 <section class="lesson" id="s0" data-num="0" data-title="Obiective">
 <script type="text/markdown">
-### Pentru cine e lecția
+### Ce veți învăța
 
-Dacă ești la început: gândește-te la calculator ca la un **birou foarte aglomerat**. Ai un singur „creier” (procesorul), puțină „masă de lucru” (memoria RAM), multe dosare (fișiere) și mai mulți oameni care vor să lucreze în același timp (programele). **Sistemul de operare** e secretara care împarte masa, spune cine vorbește la telefon și ține ordine în dosare.
+Această lecție introduce **sistemul de operare** ca strat fundamental al calculatorului, apoi trece la **procese** și la **planificarea procesorului**.
 
-### Ce acoperă lecția
-
-| Bloc | Ce vei înțelege |
+| Bloc | Conținut |
 |---|---|
-| Teorie | Ce e un SO, de ce există, tipuri, ce e kernel-ul |
-| Procese | Ce e un proces, stările lui, PID, diferența față de un fir |
-| Planificare | Cum decide SO-ul cine folosește CPU-ul (FCFS, Round Robin…) |
-| Terminal | Aceleași idei pe **Linux** și **Windows**, cu comenzi pe care le poți copia |
+| Sistemul de operare | definiție, scurt istoric, exemple actuale, componente, clasificare |
+| Procese | noțiune, stări, PCB (pe scurt) |
+| Planificare | rol, criterii, algoritmi de bază (cu scheme) |
+| Practică | pornirea și oprirea proceselor în Linux și Windows |
 
-> [!TIP]
-> La fiecare cutie de terminal: alege tab-ul **Linux** sau **Windows**, apasă **Rulează** (vezi comanda „scrisă”), apoi **Copiază comenzile** și încearcă-le pe calculatorul tău (WSL, VirtualBox, sau PowerShell).
+Tonul este **academic, dar clar**: fără jargon inutil, dar și fără explicații infantile. Accentul cade pe *ce este*, *de ce există* și *cum se leagă conceptele*.
 </script>
 </section>
 
 
 <section class="lesson" id="s1" data-num="1" data-title="Ce este un sistem de operare">
 <script type="text/markdown">
-### 1.1. Rolul SO — pe limba începătorului
+### Definiție
 
-Un **sistem de operare (SO)** este programul „de bază” al calculatorului. Nu e un joc și nu e Word: e stratul care pornește când apeși butonul de power și care rămâne pe fundal cât timp lucrezi.
+Un **sistem de operare (SO)** este software-ul de bază care:
 
-Are **două roluri** pe care merită să le ții minte:
+1. **gestionează resursele** calculatorului — CPU, memorie, dispozitive de I/O, stocare, rețea;
+2. **oferă o interfață** între aplicații (și utilizator) și hardware, astfel încât programele să nu depindă de detalii fizice ale plăcii de bază.
 
-1. **Gestionează resursele** — procesorul (cine calculează acum?), memoria RAM (cine ocupă spațiu?), discul, rețeaua, tastatura, ecranul.
-2. **Face legătura** între tine / aplicații și hardware. Tu apeși „Salvează”; SO-ul știe *cum* se scrie pe disc, indiferent că e SSD sau HDD.
+Fără SO, fiecare aplicație ar trebui să implementeze singură accesul la disc, memorie și periferice — un model impracticabil.
 
-**Exemple de SO:** Windows 10/11, macOS, Linux (Ubuntu, Fedora…), Android, iOS.
+### Scurt istoric: apariție și evoluție
 
-Fără SO, fiecare program ar trebui să știe detalii de electronica plăcii de bază. Ar fi ca și cum fiecare client din magazin ar trebui să meargă singur în depozit după marfă — haos. SO-ul e „vânzătorul” care organizează cererile.
+| Etapă | Ce s-a schimbat |
+|---|---|
+| Anii 1950 | Calculatoarele rulează **un singur job** odată; operatorul încarcă programele manual (benzi, cartele). |
+| Batch | Job-urile sunt grupate și rulate pe rând, fără interacțiune permanentă la consolă — crește utilizarea mașinii. |
+| Time-sharing (anii 1960–70) | Mai mulți utilizatori / programe **împart** CPU-ul în intervale scurte; apare ideea de multitasking interactiv. |
+| SO pe PC (anii 1980–90) | MS-DOS, apoi Windows; pe stații Unix/Linux — model client–server și rețea. |
+| SO moderne | Multitasking preemptiv, memorie virtuală, GUI, mobil, cloud; nucleul rămâne responsabil de resurse și izolare. |
 
-### 1.2. Evoluție și tipuri (pe scurt)
+Evoluția esențială: de la **o mașină – un program** la **partajarea controlată** a resurselor între multe programe și utilizatori.
 
-SO-urile nu au arătat mereu ca azi (ferestre, mouse, multitasking). Iată tipurile pe care le vei întâlni în manuale:
+### Sisteme de operare cunoscute azi
 
-| Tip | Idee simplă | Unde îl vezi |
+| Familie | Exemple | Domeniu tipic |
 |---|---|---|
-| **Batch** | job-uri pe rând, fără să stai la tastatură | istoric / centre de calcul vechi |
-| **Time-sharing** | mai multe programe / utilizatori împart CPU-ul în felii de timp | PC-ul și serverul tău de azi |
-| **Timp real** | răspunsul trebuie să vină *înainte* de un termen | frâne ABS, roboti industriali |
-| **Distribuite** | resurse pe mai multe calculatoare, văzute ca un sistem | clustere, cloud |
-| **Mobile** | economie de baterie, senzori, aplicații izolate | telefon |
+| Windows | Windows 10 / 11 | desktop, laptop, o parte din servere |
+| macOS | macOS Sonoma / Sequoia… | calculatoare Apple |
+| Linux | Ubuntu, Fedora, Debian, RHEL… | servere, dezvoltare, embedded, desktop |
+| Mobile | Android, iOS | telefoane și tablete |
+| Specializate | variante de timp real, SO pentru routere etc. | industrie, rețea |
 
-Linux și Windows moderne sunt, în esență, sisteme **time-sharing**: par că rulează 20 de programe „simultan”, dar procesorul sare foarte rapid de la unul la altul.
+În laborator vom lucra conceptual pe **Linux** și **Windows**, deoarece acoperă majoritatea scenariilor academice și profesionale.
+</script>
+</section>
 
-### 1.3. Kernel, spațiu utilizator, apeluri de sistem
 
-Imaginează două etaje:
+<section class="lesson" id="s2" data-num="2" data-title="Componentele unui SO">
+<script type="text/markdown">
+### Ce „piese” are un sistem de operare
 
-- **Etajul de jos = kernel (nucleu)** — are voie să atingă hardware-ul. E „zona restrânsă”.
-- **Etajul de sus = spațiu utilizator** — aici stau Chrome, VS Code, jocurile. Ele **nu** au voie să scrie direct pe disc sau în memoria altui program.
+Un SO nu e un singur fișier, ci un set de componente cu roluri distincte. Cele esențiale:
 
-Când aplicația vrea ceva „periculos” (citește un fișier, creează un proces), face un **apel de sistem** (*system call*): o cerere oficială către kernel.
-
-| Concept | Ce este | Exemplu |
+| Componentă | Ce este | Rol |
 |---|---|---|
-| **Kernel** | inima SO-ului | gestionează CPU, memorie, I/O |
-| **Spațiu utilizator** | unde rulează programele tale | browserul |
-| **Syscall** | „te rog, kernel, fă X” | `open`, `read`, `fork` / `CreateProcess` |
-| **Shell** | program care citește comenzi text | `bash`, PowerShell, CMD |
-| **GUI** | interfață cu ferestre | Explorer, GNOME — tot cere kernelului pe sub capotă |
+| **Kernel (nucleu)** | partea privilegiată a SO-ului | controlează CPU, memorie, dispozitive; decide cine rulează și când |
+| **Gestionar de procese** | subsistem al kernelului | creează / oprește procese, ține stările, planifică CPU |
+| **Gestionar de memorie** | alocare și protecție | împarte RAM, izolează procesele, suportă memorie virtuală |
+| **Sistem de fișiere** | organizarea datelor pe disc | directorare, permisiuni, citire/scriere |
+| **Gestionar de I/O** | legătura cu perifericele | drivere, buffere, acces la tastatură, disc, rețea |
+| **Interfață utilizator** | shell și/sau GUI | permite lansarea programelor și administrarea sistemului |
+
+### Kernel, spațiu utilizator, apeluri de sistem
+
+- **Kernel** — rulează în mod privilegiat; are acces direct la hardware.
+- **Spațiu utilizator** — aici rulează aplicațiile (browser, editor, jocuri). Ele **nu** accesează hardware-ul direct.
+- **Apel de sistem** (*system call*) — cererea oficială a unei aplicații către kernel (ex.: deschidere fișier, creare proces).
 
 ```text
-[ tu apeși pe o icoană / scrii o comandă ]
-              │
-              ▼
-[ aplicație sau shell  — spațiu utilizator ]
-              │  apel de sistem (syscall)
-              ▼
-[           kernel                      ]
-              │
-              ▼
-[     hardware (CPU, RAM, disc…)        ]
+aplicație / shell  (spațiu utilizator)
+        │  apel de sistem
+        ▼
+     kernel
+        │
+        ▼
+   hardware (CPU, RAM, disc, rețea…)
 ```
 
-### 1.4. Arhitecturi de kernel
+### Shell și GUI
 
-Cum e „organizat” nucleul diferă de la SO la SO:
-
-| Tip | Pe scurt | Exemplu |
+| | Shell | GUI |
 |---|---|---|
-| **Monolitic** | multe servicii trăiesc în kernel → rapid, dar greu de întreținut | Linux (model clasic) |
-| **Microkernel** | kernel foarte mic; restul e în procese separate | Minix, QNX |
+| Formă | linie de comandă (text) | ferestre, icoane, meniuri |
+| Exemple | `bash`, PowerShell, CMD | Explorer, GNOME, Dock |
+| Rol | lansează programe, administrează fișiere și procese | același tip de operații, prin interfață grafică |
+
+Ambele cer servicii kernelului; diferă doar modul de interacțiune.
+</script>
+</section>
+
+
+<section class="lesson" id="s3" data-num="3" data-title="Clasificare (pe scurt)">
+<script type="text/markdown">
+### Tipuri de sisteme de operare
+
+Clasificarea de mai jos e utilă la examen și pentru a plasa un SO real într-o categorie:
+
+| Tip | Caracteristică principală | Exemplu de context |
+|---|---|---|
+| **Batch** | job-uri pe rând, fără interacțiune continuă | centre de calcul clasice |
+| **Time-sharing** | partajarea CPU între mai multe programe/utilizatori | PC, servere Linux/Windows |
+| **Timp real** | răspunsul trebuie să respecte un termen strict | control industrial, ABS |
+| **Distribuit** | resurse pe mai multe noduri, văzute ca un sistem | clustere, cloud |
+| **Mobil** | energie, senzori, izolare aplicații | Android, iOS |
+
+### Arhitecturi de kernel (orientare)
+
+| Tip | Idee | Exemplu |
+|---|---|---|
+| **Monolitic** | multe servicii în nucleu | Linux (model clasic) |
+| **Microkernel** | nucleu minimal; restul în servicii separate | Minix, QNX |
 | **Hibrid** | combinație pragmatică | Windows NT |
 
-Nu trebuie să proiectezi un kernel la primul curs — e suficient să știi că **Linux ≠ Windows la interior**, deși ambele îți oferă „procese”, „fișiere” și un terminal.
-</script>
-
-<div class="term" data-title="Cine ești și pe ce sistem rulezi" data-desc="Primul reflex în laborator: află utilizatorul, numele mașinii și versiunea sistemului.">
-<script type="application/json">
-{
-  "linux": [
-    {"cmd": "whoami", "out": "student"},
-    {"cmd": "hostname", "out": "so-lab"},
-    {"cmd": "uname -a", "out": "Linux so-lab 6.8.0-40-generic #40-Ubuntu SMP x86_64 GNU/Linux"}
-  ],
-  "windows": [
-    {"cmd": "whoami", "out": "desktop-abc\\student"},
-    {"cmd": "hostname", "out": "DESKTOP-ABC"},
-    {"cmd": "ver", "out": "Microsoft Windows [Version 10.0.26200.6584]"}
-  ]
-}
-</script>
-</div>
-
-<script type="text/markdown">
-**Ce tocmai ai „rulat”:**
-
-- `whoami` — „cu ce cont sunt logat?”
-- `hostname` — numele calculatorului în rețea
-- `uname -a` (Linux) / `ver` (Windows) — ce SO și ce versiune
-
-> [!INFO]
-> Pe Windows, `systeminfo` dă un raport lung (memorie, hotfix-uri). E util, dar greu de citit dintr-o privire — începe cu `ver`, `hostname`, `whoami`.
-</script>
-
-<div class="term" data-title="Ajutor pentru comenzi" data-desc="Nu trebuie să memorezi totul. Învață să ceri ajutorul sistemului.">
-<script type="application/json">
-{
-  "linux": [
-    {"cmd": "ls --help", "out": "Usage: ls [OPTION]... [FILE]...\nList information about FILEs (the current directory by default).\n  -a, --all      do not ignore entries starting with .\n  -l             use a long listing format\n..."},
-    {"cmd": "man ls", "out": "LS(1)                         User Commands\nNAME\n       ls - list directory contents\nSYNOPSIS\n       ls [OPTION]... [FILE]...\n(man se închide cu q)"}
-  ],
-  "windows": [
-    {"cmd": "dir /?", "out": "Displays a list of files and subdirectories in a directory.\nDIR [drive:][path][filename] [/A[[:]attributes]] [/B] [/C] [/D] [/L] ..."},
-    {"cmd": "help dir", "out": "Displays a list of files and subdirectories in a directory.\n\nDIR [drive:][path][filename] ..."}
-  ]
-}
-</script>
-</div>
-
-<script type="text/markdown">
-> [!TIP]
-> Obicei bun: înainte să cauți pe Google „cum fac X”, încearcă `comanda --help`, `man comanda` (Linux) sau `comanda /?` / `help comanda` (Windows).
+Pentru cursul de bază e suficient să rețineți: SO-urile desktop/server moderne sunt, în esență, **time-sharing** cu multitasking preemptiv; nucleele diferă ca organizare internă.
 </script>
 </section>

@@ -1,0 +1,144 @@
+<section class="lesson" id="s0" data-num="0" data-title="Obiective">
+<script type="text/markdown">
+### Ce veți învăța
+
+Lecție **practică**: comenzile Windows pe care le folosiți zilnic în **CMD** și **PowerShell** când lucrați cu fișiere și directoare.
+
+| Bloc | Conținut |
+|---|---|
+| Orientare | `cd`, `dir` / `Get-ChildItem` |
+| Modificare | `mkdir`, `New-Item`, `copy`, `move`, `del` |
+| Citire & căutare | `type` / `Get-Content`, `dir /s`, `findstr` / `Select-String` |
+| Extra | redirectare, `tree`, spațiu pe disc, **utilizator & privilegii** |
+
+Fiecare comandă importantă are un **terminal simulat** (etichetă Windows — fără comutator Linux).
+
+> [!TIP]
+> Deschideți **Windows PowerShell** sau **Terminal** (Windows 11). Multe comenzi CMD (`dir`, `cd`, `copy`) funcționează și în PowerShell.
+</script>
+</section>
+
+
+<section class="lesson" id="s1" data-num="1" data-title="Noțiuni scurte">
+<script type="text/markdown">
+### CMD vs PowerShell
+
+| | **CMD** | **PowerShell** |
+|---|---|---|
+| Ideea | shell clasic Windows | shell modern + limbaj de scripting |
+| Prompt tipic | `C:\Users\Student>` | `PS C:\Users\Student>` |
+| Listare | `dir` | `dir` sau `Get-ChildItem` (`ls`, `gci`) |
+| Citire | `type` | `Get-Content` (`cat`, `gc`) |
+
+În demo-uri folosim stil **PowerShell**; unde diferă, menționăm și varianta CMD.
+
+### Fișier, folder, cale
+
+| Concept | Semnificație |
+|---|---|
+| **Fișier** | date pe disc |
+| **Folder** (director) | container pentru fișiere și alte foldere |
+| **Cale absolută** | începe cu litera unității (ex. `C:\Users\Student\docs`) |
+| **Cale relativă** | față de folderul curent (ex. `docs\a.txt`, `..`) |
+| **`%USERPROFILE%`** / `$HOME` | folderul home al utilizatorului |
+
+### Reguli importante pe Windows
+
+1. **Case-insensitive** în general: `Note.txt` și `note.txt` sunt același nume pe NTFS tipic.
+2. Separatorul de cale e `\` (în PowerShell funcționează adesea și `/`).
+3. **`del` / `Remove-Item`** din terminal **nu** trimit în Coșul de reciclare (spre deosebire de Ștergere din Explorer).
+4. Spațiile în nume: ghilimele — `"Proiect nou"`.
+
+### Orientare pe disc
+
+| Cale | Rol tipic |
+|---|---|
+| `C:\` | rădăcina unității de sistem |
+| `C:\Users\` | profilurile utilizatorilor |
+| `C:\Windows\` | fișierele sistemului |
+| `C:\Program Files\` | aplicații instalate |
+</script>
+</section>
+
+
+<section class="lesson" id="s2" data-num="2" data-title="Orientare: cd">
+<script type="text/markdown">
+### Directorul curent și navigarea
+
+| Comandă | Rol |
+|---|---|
+| `cd` (gol) / `Get-Location` / `pwd` | afișează folderul curent |
+| `cd cale` | schimbă folderul curent |
+| `cd ..` | un nivel în sus |
+| `cd ~` sau `cd $HOME` | revine în home (PowerShell) |
+| `cd \` | rădăcina unității curente |
+
+În CMD, `cd` fără argumente afișează calea; în PowerShell preferați `Get-Location` sau `pwd`.
+</script>
+
+<div class="term" data-title="cd — director curent" data-desc="Aceleași idei în CMD și PowerShell; sintaxa diferă puțin.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "cd", "out": "C:\\Users\\Student"},
+    {"cmd": "cd Documents", "out": ""},
+    {"cmd": "cd", "out": "C:\\Users\\Student\\Documents"},
+    {"cmd": "cd ..", "out": ""},
+    {"cmd": "cd C:\\Windows", "out": ""},
+    {"cmd": "cd", "out": "C:\\Windows"},
+    {"cmd": "cd %USERPROFILE%", "out": ""},
+    {"cmd": "cd", "out": "C:\\Users\\Student"}
+  ],
+  "powershell": [
+    {"cmd": "Get-Location", "out": "\nPath\n----\nC:\\Users\\Student"},
+    {"cmd": "cd Documents", "out": ""},
+    {"cmd": "pwd", "out": "\nPath\n----\nC:\\Users\\Student\\Documents"},
+    {"cmd": "cd ..", "out": ""},
+    {"cmd": "cd C:\\Windows", "out": ""},
+    {"cmd": "Get-Location", "out": "\nPath\n----\nC:\\Windows"},
+    {"cmd": "cd ~", "out": ""},
+    {"cmd": "pwd", "out": "\nPath\n----\nC:\\Users\\Student"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!INFO]
+> Dacă `cd` reușește, de obicei **nu afișează nimic** — verificați cu `pwd` / `Get-Location`.
+</script>
+</section>
+
+
+<section class="lesson" id="s3" data-num="3" data-title="Listare: dir">
+<script type="text/markdown">
+### Variante utile de `dir` / `Get-ChildItem`
+
+| Comandă | Ce face |
+|---|---|
+| `dir` | listează fișierele și folderele din folderul curent |
+| `dir /a` | include și cele ascunse / de sistem (CMD) |
+| `dir /w` | afișare pe lățime (doar nume) |
+| `dir /s` | recursiv (și subfolderele) |
+| `Get-ChildItem` | echivalent PowerShell (`gci`, `ls`) |
+| `Get-ChildItem -Force` | include elemente ascunse |
+| `Get-ChildItem -Recurse` | recursiv |
+</script>
+
+<div class="term" data-title="dir / Get-ChildItem" data-desc="Listare în CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "dir", "out": " Volume in drive C has no label.\n Directory of C:\\Users\\Student\n\n11/10/2025  09:12 AM    <DIR>          Documents\n11/11/2025  02:01 PM    <DIR>          Downloads\n11/14/2025  06:30 PM               220 notes.txt\n11/14/2025  07:00 PM    <DIR>          proiect\n               1 File(s)            220 bytes\n               3 Dir(s)"},
+    {"cmd": "dir /a", "out": " Directory of C:\\Users\\Student\n\n11/10/2025  09:12 AM    <DIR>          .\n11/10/2025  09:12 AM    <DIR>          ..\n11/09/2025  08:00 AM    <DIR>          AppData\n11/10/2025  09:12 AM    <DIR>          Documents\n11/11/2025  02:01 PM    <DIR>          Downloads\n11/14/2025  06:30 PM               220 notes.txt\n11/14/2025  07:00 PM    <DIR>          proiect"},
+    {"cmd": "dir /s /b proiect\\*.cs", "out": "C:\\Users\\Student\\proiect\\src\\main.cs"}
+  ],
+  "powershell": [
+    {"cmd": "dir", "out": "\n    Directory: C:\\Users\\Student\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\nd----          11/10/2025   9:12 AM                Documents\nd----          11/11/2025   2:01 PM                Downloads\n-a---          11/14/2025   6:30 PM            220 notes.txt\nd----          11/14/2025   7:00 PM                proiect"},
+    {"cmd": "Get-ChildItem -Force | Select-Object Mode, Name", "out": "\nMode  Name\n----  ----\nd--h- AppData\nd---- Documents\nd---- Downloads\n-a--- notes.txt\nd---- proiect"},
+    {"cmd": "Get-ChildItem proiect -Recurse -Name", "out": "docs\nsrc\nsrc\\main.cs\ndocs\\readme.md"}
+  ]
+}
+</script>
+</div>
+</section>

@@ -1,0 +1,123 @@
+<section class="lesson" id="s4" data-num="4" data-title="Creare: mkdir și touch">
+<script type="text/markdown">
+### Crearea de directoare și fișiere
+
+| Comandă | Rol |
+|---|---|
+| `mkdir nume` | creează un director |
+| `mkdir -p a/b/c` | creează tot lanțul de directoare (și părinții lipsă) |
+| `touch fisier` | creează un fișier gol (sau actualizează data unui fișier existent) |
+</script>
+
+<div class="term" data-title="mkdir și touch" data-desc="Creăm o structură mică de proiect.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "mkdir proiect", "out": ""},
+    {"cmd": "mkdir -p proiect/src proiect/docs", "out": ""},
+    {"cmd": "touch proiect/README.md", "out": ""},
+    {"cmd": "touch proiect/src/main.c", "out": ""},
+    {"cmd": "ls -R proiect", "out": "proiect:\nREADME.md  docs  src\n\nproiect/docs:\n\nproiect/src:\nmain.c"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s5" data-num="5" data-title="Copiere și mutare: cp, mv">
+<script type="text/markdown">
+### Copiere (`cp`) și mutare/redenumire (`mv`)
+
+| Comandă | Rol |
+|---|---|
+| `cp sursa dest` | copiază un fișier |
+| `cp -r dir1 dir2` | copiază un director (recursiv) |
+| `mv vechi nou` | mută sau **redenumște** |
+| `mv fisier dir/` | mută fișierul în director |
+</script>
+
+<div class="term" data-title="cp și mv" data-desc="Copiere, redenumire și mutare într-un director.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "cp notes.txt notes.bak", "out": ""},
+    {"cmd": "ls notes*", "out": "notes.bak  notes.txt"},
+    {"cmd": "mv notes.bak backup.txt", "out": ""},
+    {"cmd": "mkdir arhiva", "out": ""},
+    {"cmd": "mv backup.txt arhiva/", "out": ""},
+    {"cmd": "ls arhiva", "out": "backup.txt"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!TIP]
+> `mv a b`: dacă `b` nu există ca director, **redenumște**; dacă `b` e director, **mută înăuntru**.
+</script>
+</section>
+
+
+<section class="lesson" id="s6" data-num="6" data-title="Ștergere: rm, rmdir">
+<script type="text/markdown">
+### Ștergere — cu atenție
+
+| Comandă | Rol |
+|---|---|
+| `rm fisier` | șterge un fișier |
+| `rm -r director` | șterge directorul și tot conținutul |
+| `rmdir director` | șterge **doar** un director **gol** |
+| `rm -i fisier` | cere confirmare (mai sigur) |
+
+> [!WARN]
+> `rm -rf /cale` e ireversibil din terminal. Nu folosiți `-rf` pe căi pe care nu le-ați verificat cu `pwd` și `ls`.
+</script>
+
+<div class="term" data-title="rm și rmdir" data-desc="Ștergere fișier, director gol și director cu conținut.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "touch tmp.txt", "out": ""},
+    {"cmd": "rm tmp.txt", "out": ""},
+    {"cmd": "mkdir gol", "out": ""},
+    {"cmd": "rmdir gol", "out": ""},
+    {"cmd": "mkdir -p vechi/date", "out": ""},
+    {"cmd": "touch vechi/date/a.txt", "out": ""},
+    {"cmd": "rm -r vechi", "out": ""},
+    {"cmd": "ls vechi", "out": "ls: cannot access 'vechi': No such file or directory"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s7" data-num="7" data-title="Citire: cat, head, tail">
+<script type="text/markdown">
+### Afișarea conținutului
+
+| Comandă | Rol |
+|---|---|
+| `cat fisier` | afișează tot conținutul |
+| `head fisier` | primele 10 linii (implicit) |
+| `head -n 5 fisier` | primele 5 linii |
+| `tail fisier` | ultimele 10 linii |
+| `tail -n 3 fisier` | ultimele 3 linii |
+| `less fisier` | derulare pagină cu pagină (`q` = ieșire) |
+
+Pentru fișiere mari preferați `less` / `head` / `tail`, nu `cat` pe tot.
+</script>
+
+<div class="term" data-title="cat, head, tail" data-desc="Citire completă vs început/sfârșit de fișier.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "cat notes.txt", "out": "Lab SO - comenzi Linux\n1) pwd, cd, ls\n2) mkdir, touch\n3) cp, mv, rm\n4) grep, find"},
+    {"cmd": "head -n 2 notes.txt", "out": "Lab SO - comenzi Linux\n1) pwd, cd, ls"},
+    {"cmd": "tail -n 2 notes.txt", "out": "3) cp, mv, rm\n4) grep, find"}
+  ]
+}
+</script>
+</div>
+</section>

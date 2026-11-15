@@ -22,7 +22,7 @@ Apoi: [http://127.0.0.1:8080/](http://127.0.0.1:8080/)
 ## Cum folosești platforma
 
 1. Pe pagina principală alegi o lecție **Disponibilă**.
-2. În lecție: meniu ☰, căutare (`/`), terminale cu tab Linux | Windows, simulatoare.
+2. În lecție: meniu ☰, căutare (`/`), terminale simulate (Linux în lecția 2, Windows în lecția 3; ambele în lecția 1 unde e cazul).
 3. Banda de sus te întoarce la toate lecțiile și la lecția anterioară / următoare.
 4. La final: întrebări de autoverificare.
 

@@ -1,0 +1,146 @@
+<section class="lesson" id="s4" data-num="4" data-title="Creare: mkdir și New-Item">
+<script type="text/markdown">
+### Directoare și fișiere noi
+
+| Comandă | Rol |
+|---|---|
+| `mkdir nume` / `md nume` | creează un folder |
+| `mkdir a\b\c` | în PowerShell creează și părinții lipsă; în CMD folosiți lanțuri sau `mkdir` pe etape |
+| `New-Item -ItemType File -Name a.txt` | creează un fișier gol (PowerShell) |
+| `type nul > a.txt` | creează / golește un fișier (CMD) |
+| `ni a.txt` | alias scurt PowerShell pentru `New-Item` |
+</script>
+
+<div class="term" data-title="mkdir — creare" data-desc="Structură de proiect: CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "mkdir proiect\\src", "out": ""},
+    {"cmd": "mkdir proiect\\docs", "out": ""},
+    {"cmd": "type nul > proiect\\src\\main.cs", "out": ""},
+    {"cmd": "type nul > notes.txt", "out": ""},
+    {"cmd": "dir proiect", "out": " Directory of C:\\Users\\Student\\proiect\n\n11/15/2025  12:00 AM    <DIR>          docs\n11/15/2025  12:00 AM    <DIR>          src"}
+  ],
+  "powershell": [
+    {"cmd": "mkdir proiect\\src, proiect\\docs", "out": "\n    Directory: C:\\Users\\Student\\proiect\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\nd----          11/15/2025  12:00 AM                src\nd----          11/15/2025  12:00 AM                docs"},
+    {"cmd": "New-Item -ItemType File -Path proiect\\src\\main.cs", "out": "\n    Directory: C:\\Users\\Student\\proiect\\src\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a---          11/15/2025  12:00 AM              0 main.cs"},
+    {"cmd": "New-Item notes.txt -ItemType File", "out": "\n    Directory: C:\\Users\\Student\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a---          11/15/2025  12:00 AM              0 notes.txt"},
+    {"cmd": "dir proiect", "out": "\n    Directory: C:\\Users\\Student\\proiect\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\nd----          11/15/2025  12:00 AM                docs\nd----          11/15/2025  12:00 AM                src"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s5" data-num="5" data-title="Copiere și mutare: copy, move">
+<script type="text/markdown">
+### Copiere, mutare, redenumire
+
+| Comandă | Rol |
+|---|---|
+| `copy sursa dest` | copiază un fișier (CMD / PS) |
+| `Copy-Item sursa dest` | PowerShell; `-Recurse` pentru foldere |
+| `xcopy` / `robocopy` | copiere avansată de arbori (pe scurt: lab / backup) |
+| `move sursa dest` | mută sau redenumește |
+| `Move-Item` / `Rename-Item` | echivalente PowerShell |
+| `ren vechi nou` | redenumire (CMD) |
+
+`move fisier.txt folder\` mută în folder; `move a.txt b.txt` redenumește.
+</script>
+
+<div class="term" data-title="copy / move" data-desc="Copiere, redenumire și mutare — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "copy notes.txt arhiva\\backup.txt", "out": "        1 file(s) copied."},
+    {"cmd": "dir arhiva", "out": " Directory of C:\\Users\\Student\\arhiva\n\n11/14/2025  06:30 PM               220 backup.txt"},
+    {"cmd": "ren notes.txt lab-notes.txt", "out": ""},
+    {"cmd": "move lab-notes.txt Documents\\", "out": "        1 file(s) moved."},
+    {"cmd": "dir Documents\\lab-notes.txt", "out": " Directory of C:\\Users\\Student\\Documents\n\n11/14/2025  06:30 PM               220 lab-notes.txt"}
+  ],
+  "powershell": [
+    {"cmd": "Copy-Item notes.txt arhiva\\backup.txt", "out": ""},
+    {"cmd": "dir arhiva", "out": "\n    Directory: C:\\Users\\Student\\arhiva\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a---          11/14/2025   6:30 PM            220 backup.txt"},
+    {"cmd": "Move-Item notes.txt lab-notes.txt", "out": ""},
+    {"cmd": "Move-Item lab-notes.txt Documents\\", "out": ""},
+    {"cmd": "dir Documents\\lab-notes.txt", "out": "\n    Directory: C:\\Users\\Student\\Documents\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a---          11/14/2025   6:30 PM            220 lab-notes.txt"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s6" data-num="6" data-title="Ștergere: del, rmdir">
+<script type="text/markdown">
+### Ștergerea fișierelor și folderelor
+
+| Comandă | Rol |
+|---|---|
+| `del fisier` / `Erase` | șterge fișier(e) |
+| `rmdir folder` / `rd folder` | șterge un folder **gol** |
+| `rmdir /s folder` | șterge folder cu tot conținutul (CMD; cere confirmare) |
+| `Remove-Item fisier` | PowerShell |
+| `Remove-Item folder -Recurse -Force` | folder cu conținut, fără întrebări |
+
+> [!WARN]
+> Din terminal, ștergerea e de obicei **definitivă** (fără Coș). Nu rulați `rmdir /s` sau `Remove-Item -Recurse` pe căi importante.
+</script>
+
+<div class="term" data-title="del / Remove-Item" data-desc="Ștergere fișier și folder — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "type nul > tmp.txt", "out": ""},
+    {"cmd": "mkdir gol", "out": ""},
+    {"cmd": "del tmp.txt", "out": ""},
+    {"cmd": "rmdir gol", "out": ""},
+    {"cmd": "mkdir vechi\\a & type nul > vechi\\a\\x.txt", "out": ""},
+    {"cmd": "rmdir /s /q vechi", "out": ""},
+    {"cmd": "if exist vechi (echo DA) else (echo NU)", "out": "NU"}
+  ],
+  "powershell": [
+    {"cmd": "New-Item tmp.txt, gol -ItemType File, Directory | Out-Null", "out": ""},
+    {"cmd": "Remove-Item tmp.txt", "out": ""},
+    {"cmd": "Remove-Item gol", "out": ""},
+    {"cmd": "mkdir vechi\\a | Out-Null; New-Item vechi\\a\\x.txt -ItemType File | Out-Null", "out": ""},
+    {"cmd": "Remove-Item vechi -Recurse -Force", "out": ""},
+    {"cmd": "Test-Path vechi", "out": "False"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s7" data-num="7" data-title="Citire: type, Get-Content">
+<script type="text/markdown">
+### Conținutul fișierelor
+
+| Comandă | Rol |
+|---|---|
+| `type fisier` | afișează tot conținutul (CMD; merge și în PS) |
+| `more fisier` | paginare (CMD) |
+| `Get-Content fisier` | PowerShell (`cat`, `gc`) |
+| `Get-Content fisier -TotalCount 2` | primele 2 linii (ca `head`) |
+| `Get-Content fisier -Tail 2` | ultimele 2 linii (ca `tail`) |
+</script>
+
+<div class="term" data-title="type / Get-Content" data-desc="Citire completă vs început/sfârșit — CMD vs PowerShell.">
+<script type="application/json">
+{
+  "cmd": [
+    {"cmd": "type notes.txt", "out": "Lab SO - comenzi Windows\n1) cd, dir\n2) mkdir, New-Item\n3) copy, move, del\n4) findstr, Select-String"},
+    {"cmd": "more notes.txt", "out": "Lab SO - comenzi Windows\n1) cd, dir\n2) mkdir, New-Item\n3) copy, move, del\n4) findstr, Select-String"}
+  ],
+  "powershell": [
+    {"cmd": "Get-Content notes.txt", "out": "Lab SO - comenzi Windows\n1) cd, dir\n2) mkdir, New-Item\n3) copy, move, del\n4) findstr, Select-String"},
+    {"cmd": "Get-Content notes.txt -TotalCount 2", "out": "Lab SO - comenzi Windows\n1) cd, dir"},
+    {"cmd": "Get-Content notes.txt -Tail 2", "out": "3) copy, move, del\n4) findstr, Select-String"},
+    {"cmd": "type notes.txt", "out": "Lab SO - comenzi Windows\n1) cd, dir\n2) mkdir, New-Item\n3) copy, move, del\n4) findstr, Select-String"}
+  ]
+}
+</script>
+</div>
+</section>

@@ -1,73 +1,60 @@
-<section class="lesson" id="s3" data-num="3" data-title="Planificarea procesorului">
+<section class="lesson" id="s7" data-num="7" data-title="Pornirea și oprirea proceselor">
 <script type="text/markdown">
-### 3.1. De ce avem nevoie de planificator?
+### Cum pornim un proces
 
-Ai un CPU (sau câteva nuclee) și zeci de procese **gata**. Cine intră primul?
+Un proces pornește când SO-ul **încarcă un program** și creează o instanță de execuție. Din perspectiva utilizatorului:
 
-**Planificatorul** (*scheduler*) alege următorul proces din coada *ready*. E ca un controlor de trafic aerian: decide cine aterizează pe „pista” CPU.
-
-Criterii pe care le vei auzi la examen / în discuții:
-
-| Criteriu | Întrebarea pe care o răspunde |
-|---|---|
-| timp de așteptare | cât stă procesul la coadă până rulează? |
-| timp de răspuns | cât durează până utilizatorul *simte* o reacție? |
-| throughput | câte procese termină pe secundă / minut? |
-| echitate | evită *starvation* (un proces să nu mai fie servit niciodată) |
-
-Nu există un algoritm perfect pentru toate — de aceea există mai multe strategii.
-
-### 3.2. Algoritmi de bază (cu exemple mentale)
-
-| Algoritm | Cum decide | Plus | Minus |
-|---|---|---|---|
-| **FCFS** (*First Come First Served*) | primul venit, primul servit; fără preempție | foarte simplu | un job lung blochează pe toți din spate (*convoy effect*) |
-| **SJF** (*Shortest Job First*) | rulează mai întâi cel mai scurt | timp mediu de așteptare bun | greu de știut durata dinainte; job-urile lungi pot aștepta mult |
-| **Round Robin (RR)** | fiecare primește un **quantum** (felie de timp), apoi la coadă | bun pentru interactiv (UI, terminal) | quantum prea mic → prea multe context switch-uri |
-| **Priorități** | număr: „mai important” rulează înainte; uneori + *aging* | flexibil | fără aging → starvation |
-
-**Quantum** = cât timp las pe CPU un proces la RR înainte să-l întrerup. Exemplu didactic: 2 unități de timp.
-
-În viața reală, Linux (CFS) și Windows au planificatori **complecși**. Ideile FCFS / RR rămân baza ca să înțelegi de ce „PC-ul nu îngheață” când descarci un fișier.
-</script>
-
-<div class="sim" data-kind="sched" data-title="Simulator: FCFS vs Round Robin" data-desc="Aceleași procese: P1 are de lucru 5, P2 are 3, P3 are 4. La RR, quantum = 2. Apasă Pas de mai multe ori și compară cele două moduri." data-quantum="2"></div>
-
-<script type="text/markdown">
-**Ce să observi în simulator:**
-
-1. Alege **FCFS** → Reset → Pas, Pas… P1 rămâne pe CPU până termină (5 pași). P2 așteaptă.
-2. Alege **Round Robin** → Reset → Pas… După 2 pași, P1 e *preemptat* și intră alt proces. Timpul de răspuns pentru P2/P3 e mai bun.
-
-> [!INFO]
-> „Preemptat” = i s-a luat CPU-ul temporar, deși mai avea de lucru. Nu e o eroare — e politica RR.
-</script>
-</section>
-
-
-<section class="lesson" id="s4" data-num="4" data-title="Comenzi: kill, taskkill, fundal">
-<script type="text/markdown">
-### 4.1. Cum oprești un proces (pas cu pas)
-
-1. Găsești **PID**-ul (`ps`, `tasklist`, Task Manager).
-2. Trimiți o cerere de oprire.
-3. Dacă nu răspunde, forțezi.
-
-| Scop | Linux | Windows |
+| Mod | Linux | Windows |
 |---|---|---|
-| oprire „politicoasă” | `kill PID` → semnal **SIGTERM** | `taskkill /PID 1234` |
-| forțat | `kill -9 PID` → **SIGKILL** | `taskkill /PID 1234 /F` |
-| după nume | `pkill firefox` | `taskkill /IM chrome.exe /F` |
-| PowerShell | — | `Stop-Process -Id 1234 -Force` |
+| din GUI | dublu-clic pe aplicație | dublu-clic / meniul Start |
+| din terminal, în față | `firefox` sau calea către binar | `notepad` / numele programului |
+| din PowerShell | — | `Start-Process notepad` |
 
-**SIGTERM** = „te rog, închide-te frumos” (poate salva fișierele).  
-**SIGKILL** / `/F` = „te opresc acum” — procesul nu poate refuza.
+În terminal, scrierea numelui comenzii cere shell-ului să lanseze programul; kernelul creează procesul (PID nou) și îl trece prin stările New → Ready → Running.
+</script>
+
+<div class="term" data-title="Pornirea unui proces" data-desc="Lansare simplă din linie de comandă.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "gedit &", "out": "[1] 6201"},
+    {"cmd": "ps -C gedit -o pid,cmd", "out": "  PID CMD\n 6201 gedit"}
+  ],
+  "windows": [
+    {"cmd": "Start-Process notepad", "out": ""},
+    {"cmd": "tasklist /FI \"IMAGENAME eq notepad.exe\"", "out": "Image Name                     PID Session Name        Mem Usage\n========================= ======== ================ ============\nnotepad.exe                   8840 Console             8,192 K"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+### Cum oprim un proces — pași
+
+Oprirea corectă urmează același tipar pe ambele sisteme:
+
+1. **Identificați procesul** — aflați **PID**-ul (`ps`, `tasklist`, Task Manager).
+2. **Cereți închiderea** — semnal / comandă „politicoasă” (procesul poate salva datele).
+3. **Verificați** — a dispărut din listă?
+4. **Dacă nu răspunde** — folosiți varianta **forțată**.
+
+### Moduri de oprire
+
+| Mod | Sens | Linux | Windows |
+|---|---|---|---|
+| **Politicos** | cere procesului să se închidă; poate fi tratat de aplicație | `kill PID` (implicit **SIGTERM**) | `taskkill /PID …` |
+| **Forțat** | oprește imediat; procesul nu poate refuza | `kill -9 PID` (**SIGKILL**) | `taskkill /PID … /F` |
+| **După nume** | toate instanțele cu acel nume | `pkill nume` | `taskkill /IM nume.exe /F` |
+| **PowerShell** | API .NET / cmdlet | — | `Stop-Process -Id …` sau `-Force` |
+
+**SIGTERM** — „închide-te ordonat”.  
+**SIGKILL** / `/F` — oprire forțată; nu permite cleanup. Folosiți-o doar dacă varianta politicoasă eșuează.
 
 > [!WARN]
-> Nu ucide procese de sistem la întâmplare. Pe Linux, `kill -9 1` (procesul init/systemd) poate lăsa sistemul într-o stare foarte proastă. Pe Windows, la fel: procesele critice sunt protejate, dar forțarea unor servicii strică sesiunea.
+> Nu forțați procese de sistem critice. Oprirea greșită poate destabiliza sesiunea.
 </script>
 
-<div class="term" data-title="Oprirea unui proces" data-desc="Exemplu didactic: găsești PID-ul, trimiți semnal / taskkill, verifici că a dispărut.">
+<div class="term" data-title="Oprirea unui proces" data-desc="Găsiți PID-ul, trimiteți semnalul / taskkill, verificați dispariția.">
 <script type="application/json">
 {
   "linux": [
@@ -86,22 +73,22 @@ Nu există un algoritm perfect pentru toate — de aceea există mai multe strat
 </div>
 
 <script type="text/markdown">
-În exemplul de mai sus, al doilea `kill -9` / `taskkill` eșuează **pentru că procesul deja nu mai există** — semnal că prima oprire a funcționat.
+În exemplul de mai sus, al doilea `kill -9` / `taskkill` eșuează **pentru că procesul deja nu mai există** — semn că prima oprire a reușit.
 
-### 4.2. Rulare în fundal
+### Bonus: rulare în fundal
 
-Uneori vrei ca terminalul să-ți rămână liber în timp ce rulează altceva.
+Uneori doriți ca terminalul să rămână liber în timp ce rulează alt proces.
 
 | | Linux (bash) | Windows |
 |---|---|---|
-| pornește „în spate” | `comanda &` | `start comanda` sau `Start-Process` |
-| vezi job-urile shell-ului | `jobs` | model diferit (procese separate; PowerShell are și `Start-Job`) |
-| adu în față / fundal | `fg`, `bg` | comuți ferestrele / Task Manager |
+| pornire în fundal | `comanda &` | `start comanda` / `Start-Process` |
+| listă job-uri shell | `jobs` | model diferit (procese separate; există și `Start-Job`) |
+| aducere în față | `fg` | comutare ferestre / Task Manager |
 
-Pe Linux, `&` leagă job-ul de sesiunea ta de shell. Pe Windows, `start` deschide de obicei un proces/fereastră **separată**.
+Pe Linux, `&` leagă job-ul de sesiunea shell. Pe Windows, `start` lansează de obicei un proces separat.
 </script>
 
-<div class="term" data-title="Procese în fundal" data-desc="Linux: & + jobs. Windows: start / Start-Process.">
+<div class="term" data-title="Procese în fundal (bonus)" data-desc="Linux: &amp; + jobs. Windows: start / Start-Process.">
 <script type="application/json">
 {
   "linux": [
@@ -119,66 +106,64 @@ Pe Linux, `&` leagă job-ul de sesiunea ta de shell. Pe Windows, `start` deschid
 </section>
 
 
-<section class="lesson" id="s5" data-num="5" data-title="Rezumat">
+<section class="lesson" id="s8" data-num="8" data-title="Rezumat">
 <script type="text/markdown">
-### Ce ar trebui să poți explica cu voce tare
+### Idei de reținut
 
-| Idee | Într-o propoziție |
+| Concept | În esență |
 |---|---|
-| SO | gestionează resursele și stă între aplicații și hardware |
-| Kernel | partea privilegiată; aplicațiile cer servicii prin syscall |
-| Proces | un program *în execuție*, cu PID |
-| Stări | nou → gata ↔ rulează ↔ blocat → terminat |
-| PCB / context switch | fișa procesului; salvăm/restaurăm registre când schimbăm procesul |
-| Planificare | FCFS, SJF, RR, priorități — compromis între simplitate, așteptare și răspuns |
-| Comenzi | `ps`/`tasklist`, `kill`/`taskkill`, `uname`/`ver`, ajutor `man`/`/?` |
+| SO | gestionează resursele și mediază între aplicații și hardware |
+| Componente | kernel, gestiune procese/memorie/fișiere/I/O, shell/GUI |
+| Proces | program în execuție, cu PID și stare |
+| Stări | New, Ready, Running, Waiting, Terminated |
+| PCB | fișa kernelului pentru un proces; baza context switch |
+| Planificare | alegerea procesului Ready care primește CPU |
+| Algoritmi | FCFS, SJF, RR, priorități — fiecare cu compromisuri |
+| Comenzi | listare (`ps`/`tasklist`), pornire, oprire (`kill`/`taskkill`) |
 
-### Tabel rapid Linux ↔ Windows (lecția 1)
+### Tabel rapid Linux ↔ Windows
 
 | Scop | Linux | Windows |
 |---|---|---|
-| sistem | `uname -a`, `hostname` | `ver`, `systeminfo`, `hostname` |
-| utilizator | `whoami` | `whoami` |
-| ajutor | `man`, `--help` | `help`, `/?` |
 | procese | `ps`, `top` | `tasklist`, `Get-Process` |
+| pornire | nume comandă, `&` | `Start-Process`, `start` |
 | oprire | `kill`, `kill -9`, `pkill` | `taskkill`, `Stop-Process` |
 | fundal | `comanda &`, `jobs`, `fg`/`bg` | `start`, `Start-Process` |
 </script>
 </section>
 
 
-<section class="lesson" id="s6" data-num="6" data-title="Greșeli frecvente">
+<section class="lesson" id="s9" data-num="9" data-title="Greșeli frecvente">
 <script type="text/markdown">
-| Greșeală tipică la început | De ce e greșit | Cum gândești corect |
+| Greșeală | De ce e greșit | Abordare corectă |
 |---|---|---|
-| „Procesul = fișierul `.exe`” | pe disc e programul; în RAM e procesul | un program, N procese |
-| `kill -9` din prima | nu lași aplicația să salveze | încearcă fără `-9` / fără `/F` |
-| Quantum RR foarte mic | pierzi timp în context switch | compromis (zeci de ms în practică) |
-| „Windows n-are terminal serios” | PowerShell e foarte capabil | exersează aceleași idei pe ambele |
-| Ignori PID-ul | nu poți controla procesul | uită-te întâi la listă (`ps` / `tasklist`) |
-| Confunzi *gata* cu *blocat* | unul așteaptă CPU, celălalt așteaptă I/O | vezi simulatorul de stări |
+| Confundați programul cu procesul | pe disc e programul; în execuție e procesul | un program → una sau mai multe instanțe |
+| `kill -9` / `/F` din prima | aplicația nu mai poate salva starea | încercați mai întâi oprirea politicoasă |
+| Quantum RR foarte mic | overhead de context switch | compromis (în practică: zeci de ms) |
+| Ignorați PID-ul | nu puteți controla procesul țintă | identificați PID-ul înainte de oprire |
+| Confundați Ready cu Waiting | unul așteaptă CPU, celălalt așteaptă I/O | revedeți tabelul de stări |
 </script>
 </section>
 
 
-<section class="lesson" id="s7" data-num="7" data-title="Întrebări de autoverificare">
+<section class="lesson" id="s10" data-num="10" data-title="Autoverificare">
 <script type="text/markdown">
-Încearcă să răspunzi fără să te uiți. Apoi deschide răspunsul.
+Răspundeți mai întâi singuri, apoi deschideți soluția.
 </script>
 
-<details class="qa"><summary>1. Ce două roluri principale are un SO?</summary><div class="qa-a">Gestionează resursele (CPU, memorie, I/O, fișiere) și oferă o interfață între aplicații/utilizator și hardware.</div></details>
+<details class="qa"><summary>1. Care sunt cele două roluri principale ale unui SO?</summary><div class="qa-a">Gestionează resursele (CPU, memorie, I/O, stocare) și oferă o interfață între aplicații/utilizator și hardware.</div></details>
 
-<details class="qa"><summary>2. Ce e un apel de sistem?</summary><div class="qa-a">O cerere a unui program din spațiul utilizator către kernel (ex. citire fișier, creare proces), executată în mod privilegiat.</div></details>
+<details class="qa"><summary>2. Ce este un apel de sistem?</summary><div class="qa-a">O cerere a unui program din spațiul utilizator către kernel (ex. citire fișier, creare proces), executată în mod privilegiat.</div></details>
 
-<details class="qa"><summary>3. Care e diferența dintre stările gata și blocat?</summary><div class="qa-a"><strong>Gata</strong> = așteaptă CPU (poate rula imediat). <strong>Blocat</strong> = așteaptă un eveniment/I/O; chiar dacă CPU e liber, nu poate continua încă.</div></details>
+<details class="qa"><summary>3. Care e diferența dintre stările Ready și Waiting?</summary><div class="qa-a"><strong>Ready</strong> — așteaptă CPU și poate rula imediat. <strong>Waiting</strong> — așteaptă un eveniment/I/O; chiar dacă CPU e liber, nu poate continua încă.</div></details>
 
-<details class="qa"><summary>4. Ce salvează SO-ul la un context switch?</summary><div class="qa-a">Starea procesului curent în PCB (registre, contor de program etc.), apoi încarcă starea următorului proces.</div></details>
+<details class="qa"><summary>4. Ce rol are PCB la un context switch?</summary><div class="qa-a">În PCB se salvează starea procesului curent (registre, PC etc.); apoi se încarcă starea următorului proces din PCB-ul său.</div></details>
 
-<details class="qa"><summary>5. De ce Round Robin e mai bun decât FCFS pentru tipărire interactivă?</summary><div class="qa-a">RR preemptă job-urile lungi după un quantum, deci procesele scurte/interactive primesc CPU mai repede (timp de răspuns mai bun).</div></details>
+<details class="qa"><summary>5. De ce Round Robin e preferabil față de FCFS pentru aplicații interactive?</summary><div class="qa-a">RR preemptă job-urile lungi după un quantum, astfel procesele scurte/interactive primesc CPU mai repede (timp de răspuns mai bun).</div></details>
 
-<details class="qa"><summary>6. Ce diferență e între kill și kill -9?</summary><div class="qa-a"><code>kill</code> trimite SIGTERM (închidere cerută, poate fi tratată). <code>kill -9</code> trimite SIGKILL (oprire forțată, nu poate fi ignorată).</div></details>
+<details class="qa"><summary>6. Ce diferență există între <code>kill</code> și <code>kill -9</code>?</summary><div class="qa-a"><code>kill</code> trimite SIGTERM (închidere cerută, poate fi tratată). <code>kill -9</code> trimite SIGKILL (oprire forțată, nu poate fi ignorată).</div></details>
 
-<details class="qa"><summary>7. Ce coloană din ps/tasklist folosești ca să oprești un proces?</summary><div class="qa-a">PID (Process ID).</div></details>
+<details class="qa"><summary>7. Ce câmp din <code>ps</code> / <code>tasklist</code> folosiți ca să opriți un proces?</summary><div class="qa-a">PID (Process ID).</div></details>
 
-<details class="qa"><summary>8. Ce face comanda &amp; la finalul unei linii în bash?</summary><div class="qa-a">Rulează comanda în fundal și îți redă promptul; poți vedea job-ul cu <code>jobs</code>.</div></details>
+<details class="qa"><summary>8. Ce face <code>&amp;</code> la finalul unei comenzi în bash?</summary><div class="qa-a">Rulează comanda în fundal și redă promptul; job-ul poate fi listat cu <code>jobs</code>.</div></details>
 </section>

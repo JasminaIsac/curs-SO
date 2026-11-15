@@ -1,6 +1,6 @@
-# Lecția 1 — Procese și planificare (SO.lab)
+# Lecția 1 — Sistem de operare, procese și planificare (SO.lab)
 
-Lecție interactivă pentru prima temă din `../plan-curs.md`: noțiuni de SO, procese, planificare și comenzi Linux/Windows.
+Lecție interactivă: definiție și istoric SO, componente, clasificare, procese, PCB, planificare (cu scheme) și comenzi Linux/Windows.
 
 ## Deschidere
 
@@ -16,9 +16,8 @@ După modificări în `src/parts/`:
 
 ## Conținut
 
-- Teorie: SO, kernel, arhitecturi, procese, PCB, planificare (FCFS / RR…)
-- Terminale simulate cu tab **Linux | Windows** (Rulează / Copiază)
-- Simulatoare: stări de proces, FCFS vs Round Robin
+- Teorie: SO (istoric, componente, clasificare), procese, PCB, planificare (FCFS / SJF / RR / priorități) cu scheme
+- Terminale simulate cu tab **Linux | Windows** (listare, pornire, oprire)
 - Q&A de autoverificare
 
 Ieșirile din terminal sunt exemple tipice, nu un shell real pe mașina ta.

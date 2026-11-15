@@ -1,97 +1,128 @@
-# Plan de curs: Sisteme de Operare (3 lecții × 90 min)
+# Plan de curs: Sisteme de Operare (4 lecții)
 
-Fiecare lecție are o parte de teorie (~55 min) și una de comenzi demonstrate live (~35 min), cu perechea Linux/Windows alături, ca studenții să vadă că aceleași concepte apar în ambele sisteme.
+Structură practică: lecția 1 — concepte de bază (SO, procese, planificare); lecțiile 2–3 — comenzi folosite zi de zi (Linux, apoi Windows); lecția 4 — concepte mai avansate, explicate clar, fără detalii excesive.
 
----
-
-## Lecția 1. Noțiuni de bază, procese și planificare
-
-### Teorie
-- Ce este un SO: gestionar de resurse (procesor, memorie, dispozitive, fișiere) și interfață între utilizator, aplicații și hardware
-- Evoluție și tipuri: batch, time-sharing, timp real, distribuite, mobile
-- Nucleu (kernel), spațiu utilizator vs spațiu kernel, apeluri de sistem, shell vs interfață grafică
-- Arhitecturi: monolitică, microkernel, hibridă (exemple: Linux, Windows NT)
-- Proces: definiție, stări (nou, gata, rulează, blocat, terminat), PCB, comutarea contextului, diferența proces/fir de execuție
-- Planificarea procesorului: FCFS, SJF, Round Robin, priorități; criterii (timp de așteptare, timp de răspuns)
-
-### Comenzi
-
-| Scop | Linux | Windows (CMD/PowerShell) |
-|---|---|---|
-| Informații despre sistem | `uname -a`, `hostname` | `ver`, `systeminfo`, `hostname` |
-| Utilizatorul curent | `whoami` | `whoami` |
-| Ajutor | `man ls`, `ls --help` | `help dir`, `dir /?` |
-| Lista proceselor | `ps aux`, `top`, `htop` | `tasklist`, `Get-Process` |
-| Oprirea unui proces | `kill PID`, `kill -9 PID`, `pkill nume` | `taskkill /PID 1234 /F`, `Stop-Process` |
-| Rulare în fundal | `comanda &`, `jobs`, `bg`, `fg` | `start comanda` |
-
-Se explică semnificația fiecărei coloane din `ps`/`tasklist` (PID, utilizare CPU, memorie) și diferența dintre `kill` (semnal SIGTERM) și `kill -9` (SIGKILL).
+Fiecare lecție include terminale simulate (Linux / Windows) unde e relevant: comandă → semnificație → exemplu.
 
 ---
 
-## Lecția 2. Memorie și sisteme de fișiere
+## Lecția 1. Sistem de operare, procese și planificare
+
+**Status:** gata (documentație interactivă)
 
 ### Teorie
-- Ierarhia memoriei (registre, cache, RAM, disc); adrese logice și fizice
-- Alocare, fragmentare internă și externă
-- Paginare și segmentare; tabela de pagini
-- Memoria virtuală: swap, page fault, algoritmi de înlocuire a paginilor (FIFO, LRU)
-- Fișier: atribute, operații, tipuri; structura directoarelor (arbore), căi absolute și relative
-- Sisteme de fișiere: FAT32, exFAT, NTFS, ext4; inode, metode de alocare, jurnalizare
-- Organizarea ierarhiei de directoare: Linux (`/`, `/home`, `/etc`, `/var`, `/bin`) vs Windows (`C:\`, `Users`, `Windows`, `Program Files`)
+- Ce este un SO; scurt istoric (apariție și evoluție); SO-uri cunoscute azi
+- Componente: kernel, gestiune procese/memorie/fișiere/I/O, shell și GUI
+- Clasificare pe scurt: batch, time-sharing, timp real, distribuite, mobile; arhitecturi de kernel (monolitic, microkernel, hibrid)
+- Proces: definiție, stări (New, Ready, Running, Waiting, Terminated)
+- PCB — pe scurt (ce este, rol la context switch)
+- Planificare CPU: de ce e nevoie, criterii; FCFS, SJF, Round Robin, priorități (cu scheme și tabele clasice: Arrival, Burst, ordine, Gantt, Waiting/Turnaround)
 
-### Comenzi
-
+### Comenzi (legate de procese)
 | Scop | Linux | Windows |
 |---|---|---|
-| Director curent | `pwd` | `cd` (fără argumente), `Get-Location` |
-| Navigare | `cd /home`, `cd ..`, `cd ~` | `cd C:\Users`, `cd ..` |
-| Listare | `ls -l`, `ls -a`, `ls -lh` | `dir`, `dir /a`, `Get-ChildItem` |
-| Creare director | `mkdir proiect` | `mkdir proiect` |
-| Creare fișier | `touch a.txt` | `type nul > a.txt`, `New-Item` |
-| Copiere | `cp a.txt b.txt`, `cp -r d1 d2` | `copy a.txt b.txt`, `xcopy /s` |
-| Mutare/redenumire | `mv a.txt b.txt` | `move a.txt b.txt`, `ren` |
-| Ștergere | `rm a.txt`, `rm -r dir`, `rmdir` | `del a.txt`, `rmdir /s dir` |
-| Afișare conținut | `cat`, `less`, `head`, `tail` | `type`, `more` |
-| Căutare | `find / -name "*.txt"`, `grep text fisier` | `dir /s *.txt`, `findstr text fisier` |
-| Memorie | `free -h` | `systeminfo`, Task Manager |
-| Spațiu pe disc | `df -h`, `du -sh dir` | `fsutil volume diskfree C:` |
-| Discuri și partiții | `lsblk`, `mount` | `diskpart`, `chkdsk` |
-
-Se atrage atenția asupra pericolelor: `rm -rf` nu are coș de reciclare, iar Linux face diferența între majuscule și minuscule, spre deosebire de Windows.
+| Lista proceselor | `ps`, `top` | `tasklist`, `Get-Process` |
+| Pornire | nume comandă, `&` | `Start-Process`, `start` |
+| Oprire | `kill`, `kill -9`, `pkill` | `taskkill`, `Stop-Process` |
+| Fundal (bonus) | `comanda &`, `jobs`, `fg`/`bg` | `start`, `Start-Process` |
 
 ---
 
-## Lecția 3. Concurență, securitate, redirectare și rețea
+## Lecția 2. Comenzi Linux: fișiere, directoare și căutare
+
+**Accent:** puțină teorie, multe comenzi uzuale, fiecare cu terminal simulat.
+
+### Teorie (scurt)
+- Cale absolută vs relativă; `~`; fișier vs director
+- Linux e *case-sensitive*; `rm` nu folosește coș de reciclare
+- Ierarhia de bază: `/`, `/home`, `/etc`, `/var`, `/bin` (orientare, fără aprofundare)
+
+### Comenzi (nucleul lecției)
+| Bloc | Comenzi | Ce se explică |
+|---|---|---|
+| Orientare | `pwd`, `cd`, `cd ..`, `cd ~` | unde ești, cum te muți |
+| Listare | `ls`, `ls -l`, `ls -a`, `ls -lh`, `ls -R` | tipuri de afișare |
+| Creare | `mkdir`, `mkdir -p`, `touch` | directoare și fișiere goale |
+| Copiere / mutare | `cp`, `cp -r`, `mv` | copiere, mutare, redenumire |
+| Ștergere | `rm`, `rm -r`, `rmdir` | atenție la date șterse |
+| Citire | `cat`, `less`/`more`, `head`, `tail` | conținutul fișierelor |
+| Căutare | `find … -name`, `grep`, `grep -n`, `grep -r` | fișiere și text în fișiere |
+| Redirectare | `>`, `>>`, `\|` | scriere în fișier, conducte simple |
+| Bonus util | `du -sh`, `df -h`, `wc` | spațiu pe disc, numărare linii |
+| Identitate & drepturi | `whoami`, `id`, `chmod`, `sudo` | cine ești; `rwx`; setare permisiuni; privilegii admin |
+
+La final: tabel scurt „aceeași operație pe Windows” → punte către lecția 3.
+
+---
+
+## Lecția 3. Comenzi Windows: CMD, PowerShell și echivalente
+
+**Accent:** același tipar ca lecția 2, pe Windows (CMD + PowerShell).
+
+### Teorie (scurt)
+- `C:\`, Users, Windows, Program Files — orientare
+- Diferența CMD vs PowerShell; Windows e în general *case-insensitive*
+- `del` / ștergere vs Coșul de reciclare (GUI)
+
+### Comenzi (nucleul lecției)
+| Bloc | CMD / PowerShell | Ce se explică |
+|---|---|---|
+| Orientare | `cd`, `cd ..`, `Get-Location` | director curent și navigare |
+| Listare | `dir`, `dir /a`, `dir /s`, `dir /w`, `Get-ChildItem` | tipuri de afișare |
+| Creare | `mkdir`, `type nul >`, `New-Item` | directoare și fișiere |
+| Copiere / mutare | `copy`, `xcopy`/`robocopy` (pe scurt), `move`, `ren` | copiere, mutare, redenumire |
+| Ștergere | `del`, `rmdir /s`, `Remove-Item` | ștergere fișiere/directoare |
+| Citire | `type`, `more`, `Get-Content` | conținutul fișierelor |
+| Căutare | `dir /s *.txt`, `findstr`, `Select-String` | fișiere și text |
+| Redirectare | `>`, `>>`, `\|` | scriere și conducte |
+| Bonus util | `tree`, spațiu pe disc, Task Manager | vizualizare structură / resurse |
+| Identitate & drepturi | `whoami`, `icacls`, UAC / Run as admin | utilizator curent; ACL pe scurt; privilegii |
+
+La final: tabel de echivalență Linux ↔ Windows (legătură cu lecția 2).
+
+---
+
+## Lecția 4. Memorie, concurență, deadlock și noțiuni de rețea
+
+**Status:** gata (documentație interactivă)
+
+**Accent:** concepte clare, **fără** adâncime excesivă (fără formule grele, fără algoritmi pe matrice lungi).
 
 ### Teorie
-- Concurență: condiție de cursă (race condition), secțiune critică, excludere mutuală, semafoare și mutex
-- Interblocare (deadlock): cele 4 condiții Coffman, prevenire și evitare (algoritmul bancherului, la nivel de idee)
-- Utilizatori și grupuri, autentificare, principiul privilegiului minim
-- Permisiuni: modelul Linux (proprietar/grup/alții, `rwx`, notația octală) vs modelul Windows (ACL, UAC)
-- Intrare/ieșire standard (stdin, stdout, stderr), redirectare și conducte (pipe)
-- Noțiuni de rețea pe care le oferă SO (stiva TCP/IP, adresă IP, port, DNS)
-- Introducere în scripting: Bash și Batch/PowerShell
+1. **Memorie**
+   - Ierarhie pe scurt (registre → cache → RAM → disc)
+   - Memorie virtuală: spațiu logic mai mare decât RAM; rolul swap-ului
+   - Page fault: pagina nu e în RAM; SO o aduce de pe disc
+   - Înlocuire pagini: FIFO și LRU — ideea + un exemplu mic fiecare
 
-### Comenzi
+2. **Concurență**
+   - Race condition — exemplu scurt
+   - Secțiune critică; excludere mutuală
+   - Mutex și semafor — analogie („lacăt” / „contor de locuri”), fără implementare
 
-| Scop | Linux | Windows |
-|---|---|---|
-| Permisiuni | `ls -l`, `chmod 755 f`, `chmod u+x f` | `icacls fisier` |
-| Proprietar | `chown user:grup f` | `icacls`, `takeown` |
-| Rulare ca administrator | `sudo comanda`, `su` | „Run as administrator", `runas` |
-| Utilizatori | `useradd`, `passwd`, `id`, `groups` | `net user`, `net localgroup` |
-| Redirectare | `ls > lista.txt`, `>>`, `2>` | `dir > lista.txt`, `>>`, `2>` |
-| Conducte | `ps aux \| grep firefox` | `tasklist \| findstr firefox` |
-| Configurare rețea | `ip a`, `ifconfig` | `ipconfig /all` |
-| Testare conexiune | `ping`, `traceroute` | `ping`, `tracert` |
-| DNS, conexiuni | `nslookup`, `ss -tuln`, `netstat` | `nslookup`, `netstat -an` |
-| Script simplu | `#!/bin/bash`, `echo`, `chmod +x`, `./script.sh` | fișier `.bat` sau `.ps1`, `echo`, `pause` |
+3. **Deadlock**
+   - Cele 4 condiții (Coffman) pe o listă
+   - Exemplu simplu (2 procese, 2 resurse)
+   - Prevenire vs evitare — la nivel de idee
+   - Algoritmul bancherului: „nu alocăm dacă am ajunge într-o stare nesigură” (fără tabele elaborate)
 
-Se explică în detaliu citirea lui `ls -l` (de exemplu `-rwxr-xr--`) și calculul permisiunii 755. Lecția se poate încheia cu un script scurt, același în Bash și în Batch (afișarea datei, a utilizatorului și a spațiului liber).
+4. **Rețea (nivel SO)**
+   - IP, port, DNS — pe scurt
+   - TCP vs UDP — câte o frază
+   - Comenzi de ilustrare: `ping`, `ip a` / `ipconfig`, `nslookup` (opțional)
+
+5. **Permisiuni (opțional, 1 ecran)**
+   - Linux: `rwx`, proprietar/grup/alții
+   - Windows: ACL / UAC — doar modelul, nu administrare avansată
+
+### Ce evităm în lecția 4
+- Detalii de paginare pe biți, dovezi formale
+- Bancherul pas-cu-pas pe matrice mari
+- Stack TCP/IP complet, scripting avansat
 
 ---
 
 ## Observații
-- Lecția 3 este cea mai încărcată. Dacă ai nevoie de timp, poți trata rețeaua doar la nivel de comenzi (`ping`, `ipconfig`/`ip a`) și lăsa scriptingul pentru laborator.
-- Dacă studenții nu au Linux instalat, pot folosi WSL, o mașină virtuală (VirtualBox) sau terminale online.
+- Lecțiile 2 și 3 sunt pentru laborator / uz zilnic; lecția 4 acoperă ideile cerute la examen, pe scurt.
+- Dacă studenții nu au Linux: WSL, VirtualBox sau terminal online.
+- Documentația interactivă: hub `curs-SO`, lecții în `lectii/`.

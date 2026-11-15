@@ -1,0 +1,135 @@
+<section class="lesson" id="s4" data-num="4" data-title="Concurență">
+<script type="text/markdown">
+### De ce e o problemă
+
+Pe un sistem modern rulează **mai multe procese/fire** care pot partaja date. Dacă două fire modifică aceeași variabilă **în același timp**, rezultatul poate depinde de ordinea exactă a instrucțiunilor — greu de reprodus.
+
+### Race condition — exemplu scurt
+
+Cont comun: `sold = 100`.  
+Două operații aproape simultane: „scoate 30” și „scoate 20”.
+
+| Pas (rău) | Fir A | Fir B | sold |
+|---|---|---|---|
+| 1 | citește 100 | | 100 |
+| 2 | | citește 100 | 100 |
+| 3 | scrie 100−30=70 | | 70 |
+| 4 | | scrie 100−20=80 | **80** |
+
+Ar fi trebuit **50**. Asta e o **race condition**: rezultatul depinde de „cursa” dintre fire.
+
+### Secțiune critică și excludere mutuală
+
+- **Secțiune critică** = porțiunea de cod care accesează resursa partajată.
+- **Excludere mutuală** = la un moment dat, **un singur** fir e în secțiunea critică.
+
+### Mutex și semafor — analogii
+
+| Mecanism | Analogie | Ideea |
+|---|---|---|
+| **Mutex** | un **lacăt** cu o singură cheie | doar un fir „ține lacătul”; ceilalți așteaptă |
+| **Semafor** | un **contor de locuri** (ex. 3 locuri de parcare) | permite până la *N* accesări simultane; 0 = așteaptă |
+
+Nu implementăm aici — rețineți rolul: **sincronizare**, ca să evitați race conditions.
+
+> [!WARN]
+> Mutex/semafor greșit folosite pot duce la **deadlock** (secțiunea următoare) sau la încetiniri. Ideea e „protejați datele partajate”, nu „puneți lacăt peste tot”.
+</script>
+</section>
+
+
+<section class="lesson" id="s5" data-num="5" data-title="Deadlock">
+<script type="text/markdown">
+### Ce este
+
+**Deadlock** = un set de procese așteaptă fiecare o resursă ținută de altul din set — **nimeni nu mai înaintează**.
+
+### Cele 4 condiții (Coffman)
+
+Deadlock-ul apare doar dacă **toate** sunt adevărate simultan:
+
+1. **Excludere mutuală** — resursa nu poate fi folosită de doi odată.
+2. **Hold and wait** — un proces ține o resursă și așteaptă alta.
+3. **Fără preempție** — resursa nu i se poate lua forțat; o eliberează singur.
+4. **Așteptare circulară** — lanț P1 așteaptă P2, P2 așteaptă P1 (sau mai lung).
+
+### Exemplu simplu (2 procese, 2 resurse)
+
+Resurse: **Imprimantă (I)** și **Scanner (S)** — câte un exemplar.
+
+| Moment | Proces A | Proces B |
+|---|---|---|
+| 1 | ia Imprimanta | |
+| 2 | | ia Scannerul |
+| 3 | cere Scannerul → **așteaptă** | |
+| 4 | | cere Imprimanta → **așteaptă** |
+
+A așteaptă S (ținut de B); B așteaptă I (ținut de A) → **deadlock**.
+
+### Prevenire vs evitare
+
+| Abordare | Ideea | Exemplu de idee |
+|---|---|---|
+| **Prevenire** | spargeți **una** din cele 4 condiții | ex. „cere toate resursele odată” (evită hold-and-wait) |
+| **Evitare** | la fiecare alocare, verificați că rămâneți într-o **stare sigură** | algoritmul bancherului |
+
+### Algoritmul bancherului — doar ideea
+
+Bancă / SO: „**nu împrumut (nu aloc) dacă după asta sistemul ar putea ajunge într-o stare nesigură**” — adică o stare din care s-ar putea bloca toți.
+
+Nu construim matrici aici. Rețineți propoziția: **refuzăm o cerere care ar duce la risc de deadlock**, chiar dacă resursa e liberă momentan.
+</script>
+</section>
+
+
+<section class="lesson" id="s6" data-num="6" data-title="Rețea (nivel SO)">
+<script type="text/markdown">
+### Vocabular minim
+
+| Termen | Semnificație pe scurt |
+|---|---|
+| **IP** | adresa unui calculator în rețea (ex. `192.168.1.10`) |
+| **Port** | „ușa” unei aplicații pe acel calculator (ex. 80 HTTP, 443 HTTPS) |
+| **DNS** | traduce nume (`google.com`) în adresă IP |
+
+Adresa completă a unui serviciu e ideea **IP + port**.
+
+### TCP vs UDP
+
+| | **TCP** | **UDP** |
+|---|---|---|
+| Ideea | conexiune, livrare **fiabilă**, ordine | datagrame, **rapid**, fără garanții |
+| Analogie | telefon / scrisoare cu confirmare | carte poștală |
+| Tipic pentru | web, fișiere, SSH | DNS rapid, streaming, jocuri (uneori) |
+
+### Comenzi de ilustrare
+
+| Scop | Linux | Windows |
+|---|---|---|
+| Test conectivitate | `ping` | `ping` |
+| Adrese de rețea | `ip a` / `ip addr` | `ipconfig` / `Get-NetIPAddress` |
+| DNS | `nslookup` / `dig` | `nslookup` / `Resolve-DnsName` |
+</script>
+
+<div class="term" data-title="ping, IP, DNS" data-desc="Comenzi de orientare în rețea — aceleași idei pe Linux și Windows.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ping -c 2 8.8.8.8", "out": "PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=12.4 ms\n64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=11.9 ms\n\n--- 8.8.8.8 ping statistics ---\n2 packets transmitted, 2 received, 0% packet loss"},
+    {"cmd": "ip -br a", "out": "lo               UNKNOWN        127.0.0.1/8 ::1/128\neth0             UP             192.168.1.20/24"},
+    {"cmd": "nslookup example.com", "out": "Server:\t\t127.0.0.53\nAddress:\t127.0.0.53#53\n\nNon-authoritative answer:\nName:\texample.com\nAddress: 93.184.216.34"}
+  ],
+  "windows": [
+    {"cmd": "ping -n 2 8.8.8.8", "out": "Pinging 8.8.8.8 with 32 bytes of data:\nReply from 8.8.8.8: bytes=32 time=12ms TTL=117\nReply from 8.8.8.8: bytes=32 time=11ms TTL=117\n\nPing statistics for 8.8.8.8:\n    Packets: Sent = 2, Received = 2, Lost = 0 (0% loss)"},
+    {"cmd": "ipconfig", "out": "Windows IP Configuration\n\nEthernet adapter Ethernet:\n   IPv4 Address. . . . . . . . . . . : 192.168.1.20\n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Default Gateway . . . . . . . . . : 192.168.1.1"},
+    {"cmd": "nslookup example.com", "out": "Server:  dns.home.local\nAddress:  192.168.1.1\n\nNon-authoritative answer:\nName:    example.com\nAddress:  93.184.216.34"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!INFO]
+> `ping` reușit ≠ „internetul merge complet”; arată doar că gazda răspunde la ICMP (uneori e blocat de firewall).
+</script>
+</section>

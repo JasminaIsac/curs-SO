@@ -1,0 +1,85 @@
+<section class="lesson" id="s7" data-num="7" data-title="Permisiuni (recapit)">
+<script type="text/markdown">
+### Două modele, aceeași idee
+
+Cine poate citi / scrie / executa un fișier sau un folder?
+
+| | **Linux** (lecția 2) | **Windows** (lecția 3) |
+|---|---|---|
+| Model | `rwx` pe **proprietar / grup / alții** | **ACL** pe utilizatori și grupuri |
+| Vizualizare | `ls -l` | `icacls` / Proprietăți → Securitate |
+| Setare tipică | `chmod u+x`, `chmod 755` | `icacls … /grant`, Explorer |
+| Privilegii elevate | `sudo` | Run as administrator / **UAC** |
+| Identitate | `whoami`, `id` | `whoami`, `$env:USERNAME` |
+
+Nu reluăm administrarea avansată — doar harta mentală:
+
+1. Fiecare fișier are **reguli de acces**.
+2. Utilizatorul obișnuit ≠ administrator.
+3. Elevarea privilegiilor e **puternică** și trebuie folosită rar.
+</script>
+</section>
+
+
+<section class="lesson" id="s8" data-num="8" data-title="Rezumat">
+<script type="text/markdown">
+### Hartă de reținut
+
+| Temă | Propoziția-cheie |
+|---|---|
+| Ierarhia memoriei | rapid & mic aproape de CPU; lent & mare pe disc |
+| Memorie virtuală | spațiu logic ≥ RAM; pagini în RAM sau pe swap |
+| Page fault | pagina lipsește din RAM → SO o aduce de pe disc |
+| FIFO | iese pagina **intrată** cea mai demult |
+| LRU | iese pagina **folosită** cea mai demult |
+| Race condition | rezultat greșit din interleaving pe date partajate |
+| Mutex / semafor | lacăt (1) / contor de locuri (N) |
+| Deadlock | așteptare circulară + cele 4 condiții Coffman |
+| Bancherul | nu alocăm dacă starea ar deveni nesigură |
+| Rețea | IP + port; DNS traduce nume → IP; TCP sigur, UDP rapid |
+| Permisiuni | Linux `rwx` / Windows ACL; `sudo` ↔ Run as admin |
+</script>
+</section>
+
+
+<section class="lesson" id="s9" data-num="9" data-title="Greșeli frecvente">
+<script type="text/markdown">
+### Ce se confundă des
+
+| Greșeală | Clarificare |
+|---|---|
+| „Page fault = program crash” | Nu neapărat — e mecanismul normal al memoriei virtuale |
+| „FIFO = LRU” | FIFO după **ordine de intrare**; LRU după **ultimele folosiri** |
+| „Mutex și semafor sunt la fel” | Mutex ≈ 1 loc; semaforul poate avea **N** locuri |
+| „Deadlock = orice așteptare” | Trebuie **cerc** + celelalte condiții Coffman |
+| „Bancherul e un tabel de memorat” | Rețineți **ideea** de stare sigură / nesigură |
+| „TCP și UDP fac același lucru” | TCP e fiabil; UDP e ușor și fără garanții |
+</script>
+</section>
+
+
+<section class="lesson" id="s10" data-num="10" data-title="Autoverificare">
+<script type="text/markdown">
+Răspundeți mai întâi singuri, apoi deschideți soluția.
+</script>
+
+<details class="qa"><summary>1. Ordonați pe scurt ierarhia memoriei de la cel mai rapid la cel mai lent.</summary><div class="qa-a">Registre → cache → RAM → disc (inclusiv swap).</div></details>
+
+<details class="qa"><summary>2. Ce este memoria virtuală, într-o frază?</summary><div class="qa-a">Spațiul de adrese <strong>logic</strong> al unui proces, care poate fi mai mare decât RAM-ul fizic; paginile stau în RAM sau pe disc (swap).</div></details>
+
+<details class="qa"><summary>3. Ce se întâmplă la un page fault?</summary><div class="qa-a">Pagina cerută nu e în RAM; SO-ul o aduce de pe disc (poate înlocuind altă pagină) și procesul reia execuția.</div></details>
+
+<details class="qa"><summary>4. Care e diferența de idee între FIFO și LRU?</summary><div class="qa-a">FIFO scoate pagina <strong>încărcată</strong> cea mai demult; LRU scoate pagina <strong>folosită</strong> cea mai demult.</div></details>
+
+<details class="qa"><summary>5. Dați un exemplu scurt de race condition.</summary><div class="qa-a">Două fire citesc același <code>sold</code>, calculează local și scriu înapoi — una dintre actualizări se poate pierde.</div></details>
+
+<details class="qa"><summary>6. Mutex vs semafor — analogia?</summary><div class="qa-a">Mutex = <strong>lacăt</strong> (un singur deținător). Semafor = <strong>contor de locuri</strong> (până la N accesări).</div></details>
+
+<details class="qa"><summary>7. Care sunt cele 4 condiții Coffman?</summary><div class="qa-a">Excludere mutuală; hold and wait; fără preempție; așteptare circulară.</div></details>
+
+<details class="qa"><summary>8. Ce idee are algoritmul bancherului?</summary><div class="qa-a">Nu alocă o resursă dacă după alocare sistemul ar ajunge într-o <strong>stare nesigură</strong> (risc de deadlock).</div></details>
+
+<details class="qa"><summary>9. TCP vs UDP — o frază fiecare.</summary><div class="qa-a">TCP: conexiune, livrare fiabilă. UDP: rapid, fără garanții de livrare/ordine.</div></details>
+
+<details class="qa"><summary>10. Ce face DNS?</summary><div class="qa-a">Traduce un <strong>nume</strong> de gazdă (ex. <code>example.com</code>) într-o adresă <strong>IP</strong>.</div></details>
+</section>

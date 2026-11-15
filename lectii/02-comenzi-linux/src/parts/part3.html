@@ -1,0 +1,296 @@
+<section class="lesson" id="s8" data-num="8" data-title="Căutare: find">
+<script type="text/markdown">
+### Găsirea fișierelor după nume
+
+| Comandă | Rol |
+|---|---|
+| `find . -name "*.txt"` | în directorul curent și subdirectoare, după model de nume |
+| `find /home/student -name "main.c"` | caută un nume exact într-un arbore |
+| `find . -type d -name "docs"` | doar directoare |
+| `find . -type f -name "*.log"` | doar fișiere |
+
+`*` = orice șir; puneți modelul între ghilimele ca shell-ul să nu-l extindă prea devreme.
+</script>
+
+<div class="term" data-title="find" data-desc="Căutare după nume în arborele de proiect.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "find proiect -name \"*.c\"", "out": "proiect/src/main.c"},
+    {"cmd": "find . -name \"*.txt\"", "out": "./notes.txt\n./arhiva/backup.txt"},
+    {"cmd": "find proiect -type d", "out": "proiect\nproiect/docs\nproiect/src"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s9" data-num="9" data-title="Căutare în text: grep">
+<script type="text/markdown">
+### Căutarea unui șir în fișiere
+
+| Comandă | Rol |
+|---|---|
+| `grep text fisier` | liniile care conțin `text` |
+| `grep -n text fisier` | + numărul liniei |
+| `grep -i text fisier` | ignoră majuscule/minuscule |
+| `grep -r text director` | recursiv în toate fișierele din director |
+| `grep -v text fisier` | linii care **nu** conțin textul |
+</script>
+
+<div class="term" data-title="grep" data-desc="Căutare în fișier și recursiv în director.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "grep mkdir notes.txt", "out": "2) mkdir, touch"},
+    {"cmd": "grep -n grep notes.txt", "out": "4:4) grep, find"},
+    {"cmd": "grep -ri \"main\" proiect", "out": "proiect/src/main.c:#include <stdio.h>\nproiect/src/main.c:int main(void) {"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!TIP]
+> Combinație frecventă: `ls -l \| grep "^d"` — doar liniile de directoare din listarea lungă (conductă, vezi secțiunea următoare).
+</script>
+</section>
+
+
+<section class="lesson" id="s10" data-num="10" data-title="Redirectare și conducte">
+<script type="text/markdown">
+### `>`, `>>` și `|`
+
+| Sintaxă | Rol |
+|---|---|
+| `comanda > fisier` | scrie ieșirea în fișier (**suprascrie**) |
+| `comanda >> fisier` | **adaugă** la sfârșitul fișierului |
+| `cmd1 \| cmd2` | ieșirea lui `cmd1` devine intrarea lui `cmd2` (conductă / *pipe*) |
+
+Exemple tipice: salvați o listă de fișiere, filtrați cu `grep`, numărați linii.
+</script>
+
+<div class="term" data-title="Redirectare și pipe" data-desc="Salvare în fișier, append și filtrare prin conductă.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ls > lista.txt", "out": ""},
+    {"cmd": "cat lista.txt", "out": "Documents\nDownloads\narhiva\nlista.txt\nnotes.txt\nproiect"},
+    {"cmd": "echo \"---\" >> lista.txt", "out": ""},
+    {"cmd": "ls \| grep \"^p\"", "out": "proiect"},
+    {"cmd": "grep -n \"Lab\" notes.txt \| wc -l", "out": "1"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s11" data-num="11" data-title="Bonus: du, df, wc">
+<script type="text/markdown">
+### Comenzi utile pe scurt
+
+| Comandă | Rol |
+|---|---|
+| `du -sh director` | cât spațiu ocupă un director (*disk usage*, sumar) |
+| `df -h` | spațiu liber pe partiții (*disk free*) |
+| `wc -l fisier` | număr de linii (`-w` cuvinte, `-c` octeți) |
+</script>
+
+<div class="term" data-title="du, df, wc" data-desc="Spațiu pe disc și numărare linii.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "du -sh proiect", "out": "16K\tproiect"},
+    {"cmd": "df -h /", "out": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1        32G   12G   19G  39% /"},
+    {"cmd": "wc -l notes.txt", "out": "5 notes.txt"}
+  ]
+}
+</script>
+</div>
+</section>
+
+
+<section class="lesson" id="s12" data-num="12" data-title="Utilizator, permisiuni și sudo">
+<script type="text/markdown">
+### Cine sunteți pe sistem
+
+| Comandă | Rol |
+|---|---|
+| `whoami` | numele utilizatorului curent |
+| `id` | UID, GID și grupurile din care faceți parte |
+| `groups` | doar lista de grupuri |
+
+### Ce sistem rulați (`uname` · pe Windows: `ver` / `systeminfo`)
+
+După ce știți *cine* sunteți, e util să știți *pe ce* rulați.
+
+| Comandă | Rol |
+|---|---|
+| `uname -a` | kernel, arhitectură, hostname (Linux) |
+| `cat /etc/os-release` | numele distro-ului și versiunea (Ubuntu, Debian…) |
+| `ver` (**Windows**) | versiunea Windows, pe scurt (ex. `Windows 10 …`) |
+| `systeminfo` (**Windows**) | raport detaliat: OS, memorie, plăci de rețea, uptime… |
+
+Pe Linux folosiți `uname` / `os-release`. Echivalentele Windows — `ver` (rapid) și `systeminfo` (complet) — le exersați în lecția 3; pe WSL puteți rula și `cmd.exe /c ver`.
+
+Pe Linux, fiecare fișier are un **proprietar** (*user*), un **grup** și drepturi pentru **alții** (*others*).
+
+### Ce înseamnă permisiunile (`ls -l`)
+
+Exemplu de linie: `-rwxr-xr-- 1 student student … script.sh`
+
+| Parte | Semnificație |
+|---|---|
+| primul caracter | tip: `-` fișier, `d` director, `l` legătură |
+| `rwx` (pozițiile 2–4) | drepturi **proprietar** (*user*) |
+| `r-x` (5–7) | drepturi **grup** |
+| `r--` (8–10) | drepturi **alții** |
+
+| Literă | Pe fișier | Pe director |
+|---|---|---|
+| `r` (*read*) | citești conținutul | vezi lista de nume (`ls`) |
+| `w` (*write*) | modifici / ștergi conținutul | creezi / ștergi fișiere înăuntru |
+| `x` (*execute*) | poți rula fișierul ca program | poți „intra” în director (`cd`) |
+
+### Cum setăm permisiunile: `chmod`
+
+Două stiluri uzuale — **simbolic** și **octal**.
+
+**Simbolic** (clar pentru începători):
+
+| Comandă | Efect |
+|---|---|
+| `chmod u+x script.sh` | adaugă execuție pentru proprietar |
+| `chmod g-w notes.txt` | scoate scriere pentru grup |
+| `chmod o+r notes.txt` | permite citire pentru alții |
+| `chmod a-x script.sh` | scoate execuție pentru toți (`a` = all) |
+
+Litere: `u` = user, `g` = group, `o` = others, `a` = all; `+` adaugă, `-` scoate, `=` setează exact.
+
+**Octal** (compact): fiecare cifră = `r`×4 + `w`×2 + `x`×1.
+
+| Cifră | Drepturi | Litere |
+|---|---|---|
+| `7` | 4+2+1 | `rwx` |
+| `6` | 4+2 | `rw-` |
+| `5` | 4+1 | `r-x` |
+| `4` | 4 | `r--` |
+| `0` | nimic | `---` |
+
+Ordinea: **proprietar · grup · alții**. Exemple: `chmod 755 script.sh` → `rwxr-xr-x`; `chmod 644 notes.txt` → `rw-r--r--`.
+
+### `sudo` — comenzi cu privilegii de administrator
+
+Utilizatorul obișnuit nu poate modifica fișiere de sistem (ex. în `/etc`). **`sudo`** (*superuser do*) rulează **o comandă** ca administrator (`root`), de obicei după parola voastră.
+
+| Comandă | Rol |
+|---|---|
+| `sudo comanda` | rulează `comanda` cu drepturi elevate |
+| `sudo -i` | deschide un shell ca `root` (folosiți rar) |
+| `sudo whoami` | ar trebui să afișeze `root` |
+
+> [!WARN]
+> Folosiți `sudo` doar când e necesar. O greșeală cu `sudo rm -r …` poate strica sistemul. Nu copiați comenzi `sudo` din surse necunoscute.
+</script>
+
+<div class="term" data-title="whoami, permisiuni, chmod, sudo" data-desc="Identitate, citirea drepturilor, setare cu chmod și un exemplu de sudo.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "whoami", "out": "student"},
+    {"cmd": "id", "out": "uid=1000(student) gid=1000(student) groups=1000(student),27(sudo)"},
+    {"cmd": "uname -a", "out": "Linux so-lab 6.8.0-48-generic #48-Ubuntu SMP PREEMPT_DYNAMIC x86_64 GNU/Linux"},
+    {"cmd": "cat /etc/os-release | head -n 4", "out": "NAME=\"Ubuntu\"\nVERSION=\"24.04.1 LTS (Noble Numbat)\"\nID=ubuntu\nVERSION_ID=\"24.04\""},
+    {"cmd": "ls -l script.sh", "out": "-rw-r--r-- 1 student student 42 Nov 14 20:10 script.sh"},
+    {"cmd": "chmod u+x script.sh", "out": ""},
+    {"cmd": "ls -l script.sh", "out": "-rwxr--r-- 1 student student 42 Nov 14 20:10 script.sh"},
+    {"cmd": "chmod 755 script.sh", "out": ""},
+    {"cmd": "ls -l script.sh", "out": "-rwxr-xr-x 1 student student 42 Nov 14 20:10 script.sh"},
+    {"cmd": "sudo whoami", "out": "root"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!TIP]
+> Verificați mereu cu `ls -l` după `chmod`. Pentru scripturi pe care vreți să le rulați: `chmod u+x fisier` apoi `./fisier`.
+</script>
+</section>
+
+
+<section class="lesson" id="s13" data-num="13" data-title="Punte către Windows">
+<script type="text/markdown">
+### Aceeași operație pe Windows (lecția 3)
+
+| Operație | Linux (acum) | Windows (următoarea lecție) |
+|---|---|---|
+| Director curent | `pwd` | `cd` (gol) / `Get-Location` |
+| Navigare | `cd`, `cd ..` | `cd`, `cd ..` |
+| Listare | `ls -l` | `dir`, `Get-ChildItem` |
+| Creare dir | `mkdir` | `mkdir` |
+| Creare fișier | `touch` | `New-Item` / `type nul >` |
+| Copiere | `cp`, `cp -r` | `copy`, `xcopy` / `robocopy` |
+| Mutare | `mv` | `move`, `ren` |
+| Ștergere | `rm`, `rm -r` | `del`, `rmdir /s` |
+| Citire | `cat` | `type`, `Get-Content` |
+| Căutare text | `grep` | `findstr`, `Select-String` |
+| Căutare fișiere | `find` | `dir /s` |
+| Identitate | `whoami` | `whoami` |
+| Versiune OS | `uname -a`, `/etc/os-release` | `ver`, `systeminfo` |
+| Privilegii | `sudo` | Run as administrator / UAC |
+
+Ideea e aceeași; diferă sintaxa și unele detalii (case-sensitivity, coș de reciclare în GUI).
+</script>
+</section>
+
+
+<section class="lesson" id="s14" data-num="14" data-title="Rezumat">
+<script type="text/markdown">
+### Setul minim de reținut
+
+| Scop | Comenzi |
+|---|---|
+| Unde sunt / mă mut | `pwd`, `cd` |
+| Ce e aici | `ls`, `ls -la`, `ls -lh` |
+| Creez | `mkdir`, `mkdir -p`, `touch` |
+| Copiez / mut | `cp`, `cp -r`, `mv` |
+| Șterg | `rm`, `rm -r`, `rmdir` |
+| Citesc | `cat`, `head`, `tail`, `less` |
+| Caut | `find`, `grep` |
+| Redirectez | `>`, `>>`, `\|` |
+| Cine sunt / sistem | `whoami`, `id`, `uname -a` (`ver` / `systeminfo` pe Windows) |
+| Drepturi | `chmod`, `sudo` |
+
+Flux tipic: `pwd` → `ls` → `cd` → creezi/modifici → verifici → cauți dacă e nevoie. Pentru scripturi: `chmod u+x` apoi `./script`.
+</script>
+</section>
+
+
+<section class="lesson" id="s15" data-num="15" data-title="Autoverificare">
+<script type="text/markdown">
+Răspundeți mai întâi singuri, apoi deschideți soluția.
+</script>
+
+<details class="qa"><summary>1. Ce diferență e între calea <code>/home/student/a.txt</code> și <code>a.txt</code>?</summary><div class="qa-a">Prima e <strong>absolută</strong> (de la <code>/</code>). A doua e <strong>relativă</strong> la directorul curent.</div></details>
+
+<details class="qa"><summary>2. Ce face <code>ls -la</code>?</summary><div class="qa-a">Listare lungă (<code>-l</code>) inclusiv fișierele ascunse (<code>-a</code>).</div></details>
+
+<details class="qa"><summary>3. Cum creați directorul <code>a/b/c</code> dintr-o singură comandă dacă <code>a</code> și <code>b</code> nu există?</summary><div class="qa-a"><code>mkdir -p a/b/c</code></div></details>
+
+<details class="qa"><summary>4. <code>mv vechi.txt nou.txt</code> — ce s-a întâmplat?</summary><div class="qa-a">Fișierul a fost <strong>redenumit</strong> (sau mutat, dacă <code>nou.txt</code> ar fi fost un director existent).</div></details>
+
+<details class="qa"><summary>5. De ce e periculos <code>rm -r</code>?</summary><div class="qa-a">Șterge recursiv și, în terminal, de obicei <strong>fără</strong> coș de reciclare — datele nu se recuperează ușor.</div></details>
+
+<details class="qa"><summary>6. Ce face <code>grep -n "error" log.txt</code>?</summary><div class="qa-a">Afișează liniile din <code>log.txt</code> care conțin <code>error</code>, împreună cu <strong>numărul liniei</strong>.</div></details>
+
+<details class="qa"><summary>7. Ce diferență e între <code>&gt;</code> și <code>&gt;&gt;</code>?</summary><div class="qa-a"><code>&gt;</code> suprascrie fișierul; <code>&gt;&gt;</code> adaugă la sfârșit.</div></details>
+
+<details class="qa"><summary>8. Ce face <code>ls \| grep txt</code>?</summary><div class="qa-a">Listează conținutul directorului și filtrează liniile care conțin <code>txt</code> (conductă între <code>ls</code> și <code>grep</code>).</div></details>
+
+<details class="qa"><summary>9. În <code>-rwxr-xr--</code>, ce drepturi are grupul?</summary><div class="qa-a">Grupul are <code>r-x</code>: citește și execută, <strong>fără</strong> scriere.</div></details>
+
+<details class="qa"><summary>10. Ce face <code>sudo</code> și când îl folosiți?</summary><div class="qa-a">Rulează <strong>o comandă</strong> cu privilegii de administrator (<code>root</code>). Îl folosiți doar când e nevoie (ex. instalări, fișiere de sistem) — greșelile cu <code>sudo</code> pot afecta tot sistemul.</div></details>
+</section>

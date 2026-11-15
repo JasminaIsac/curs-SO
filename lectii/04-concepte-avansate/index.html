@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Memorie, concurență, deadlock — SO.lab</title>
+    <meta name="description" content="Lecție: memorie virtuală, concurență, deadlock, noțiuni de rețea și permisiuni — concepte clare, fără detalii excesive.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap">
+    <link rel="stylesheet" href="assets/app.css">
+    <link rel="stylesheet" href="../../assets/course-nav.css">
+</head>
+<body>
+    <header class="topbar">
+        <button class="icon-btn menu-btn" id="menu" type="button" aria-label="Deschide temele" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <a class="brand" href="../../index.html">
+            <span class="brand-mark">SO<span>.</span>lab</span>
+            <span class="brand-sub">Lecția 4 · Concepte avansate</span>
+        </a>
+        <div class="topbar-actions">
+            <button class="icon-btn" id="theme" type="button">Temă: auto</button>
+        </div>
+        <span class="progress" aria-hidden="true"></span>
+    </header>
+<div class="layout">
+        <aside class="sidebar" id="sidebar" aria-label="Teme curs">
+            <div class="search">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
+                <input id="search" type="search" placeholder="Caută temă (/)" aria-label="Caută temă">
+            </div>
+            <ol class="toc" id="toc"></ol>
+            <p class="toc-empty" id="toc-empty" hidden>Niciun rezultat.</p>
+        </aside>
+
+        <main class="content" id="top">
+            <div class="hero">
+                <span class="kicker">Sisteme de operare · documentație interactivă</span>
+                <h1>Memorie, concurență, deadlock și rețea</h1>
+                <p>Concepte esențiale pentru examen, explicate clar: ierarhia memoriei, page fault, FIFO/LRU, race condition, mutex/semafor, deadlock, IP/DNS și un recapit scurt al permisiunilor.</p>
+                <div class="hero-stats">
+                    <span class="chip"><b id="stat-sections">0</b> secțiuni</span>
+                    <span class="chip"><b id="stat-demos">0</b> demo-uri</span>
+                    <span class="chip"><b id="stat-qa">0</b> întrebări</span>
+                    <span class="chip">Teme curs · <b>/</b></span>
+                </div>
+            </div>
+
+<section class="lesson" id="s0" data-num="0" data-title="Obiective">
+<script type="text/markdown">
+### Ce veți învăța
+
+Lecție de **concepte** (nu laborator de comenzi): ideile pe care le întâlniți la examen, fără adâncime excesivă.
+
+| Bloc | Ce rețineți |
+|---|---|
+| Memorie | ierarhie, memorie virtuală, page fault, FIFO vs LRU |
+| Concurență | race condition, secțiune critică, mutex / semafor |
+| Deadlock | 4 condiții Coffman, exemplu, prevenire vs evitare, bancherul (idee) |
+| Rețea | IP, port, DNS, TCP vs UDP + `ping` / `ipconfig` |
+| Permisiuni | recapit: `rwx` / ACL (legătură cu lecțiile 2–3) |
+
+> [!TIP]
+> Scopul: să puteți **explica cu cuvintele voastre** fiecare idee, nu să memorați tabele uriașe.
+</script>
+</section>
+
+
+<section class="lesson" id="s1" data-num="1" data-title="Ierarhia memoriei">
+<script type="text/markdown">
+### De ce există mai multe „niveluri”
+
+CPU-ul e rapid; discul e lent. SO-ul și hardware-ul organizează memoria pe **niveluri**: cu cât e mai aproape de CPU, cu atât e mai rapidă și (de obicei) mai mică / mai scumpă.
+
+| Nivel | Unde | Vitează (idee) | Capacitate tipică |
+|---|---|---|---|
+| Registre | în CPU | foarte rapid | foarte mică |
+| Cache | lângă CPU | rapid | mică (KB–MB) |
+| RAM | memorie principală | medie | GB |
+| Disc / SSD | stocare | lent | mare (GB–TB) |
+
+**Schemă (sus = rapid, jos = lent):**
+
+| | |
+|---|---|
+| **CPU / registre** | |
+| ↓ | |
+| **Cache** | |
+| ↓ | |
+| **RAM** | |
+| ↓ | |
+| **Disc (inclusiv swap)** | |
+
+Ideea: programele „văd” un spațiu mare; datele folosite des stau cât mai sus în ierarhie.
+</script>
+</section>
+
+
+<section class="lesson" id="s2" data-num="2" data-title="Memorie virtuală și page fault">
+<script type="text/markdown">
+### Memorie virtuală — ideea
+
+Fiecare proces are un **spațiu de adrese logic** (virtual) care poate fi **mai mare** decât RAM-ul fizic disponibil.
+
+- SO-ul împarte memoria în **pagini** (blocuri de dimensiune fixă).
+- Unele pagini stau în **RAM**; altele pot sta pe disc, în zona de **swap** / fișier de paginare.
+- Procesul nu trebuie să știe unde e fizic fiecare pagină — SO-ul (+ MMU) traduce adresele.
+
+### Page fault
+
+**Page fault** = procesul cere o pagină care **nu e în RAM**.
+
+1. CPU generează o întrerupere (fault).
+2. SO-ul găsește pagina pe disc (sau o creează).
+3. O încarcă în RAM (poate trebuie să **scoată** altă pagină — *page replacement*).
+4. Procesul reia instrucțiunea.
+
+> [!INFO]
+> Un page fault nu e neapărat o „eroare de program” — e mecanismul normal al memoriei virtuale. Prea multe fault-uri → sistemul „thrashing” (tot timpul pe disc).
+</script>
+</section>
+
+
+<section class="lesson" id="s3" data-num="3" data-title="Înlocuire pagini: FIFO și LRU">
+<script type="text/markdown">
+### Problema
+
+RAM-ul e plin și trebuie adusă o pagină nouă. **Care pagină existentă scoatem?**
+
+Nu facem algoritmi pe biți aici — doar **ideea** + un exemplu mic (3 cadre în RAM).
+
+### Date comune
+
+Cadre disponibile în RAM: **3**.  
+Șirul de referințe (pagini cerute, în ordine): **7, 0, 1, 2, 0, 3, 0**
+
+### FIFO — First In, First Out
+
+Scoatem pagina aflată de **cel mai mult timp** în RAM (ca o coadă).
+
+| Pas | Cerere | Cadre (după) | Fault? |
+|---|---|---|---|
+| 1 | 7 | 7, —, — | da |
+| 2 | 0 | 7, 0, — | da |
+| 3 | 1 | 7, 0, 1 | da |
+| 4 | 2 | **2**, 0, 1 | da (iese 7) |
+| 5 | 0 | 2, 0, 1 | nu (0 e deja) |
+| 6 | 3 | 2, **3**, 1 | da (iese 0) |
+| 7 | 0 | 2, 3, **0** | da (iese 1) |
+
+Fault-uri FIFO pe acest șir: **6**.
+
+### LRU — Least Recently Used
+
+Scoatem pagina **folosită cel mai demult** (nu neapărat cea mai veche ca vârstă de încărcare).
+
+| Pas | Cerere | Cadre (după) | Fault? | Observație |
+|---|---|---|---|---|
+| 1 | 7 | 7, —, — | da | |
+| 2 | 0 | 7, 0, — | da | |
+| 3 | 1 | 7, 0, 1 | da | |
+| 4 | 2 | **2**, 0, 1 | da | iese 7 (cel mai demult folosit) |
+| 5 | 0 | 2, 0, 1 | nu | 0 e „proaspăt” |
+| 6 | 3 | 2, 0, **3** | da | iese 1 (mai demult decât 2 și 0) |
+| 7 | 0 | 2, 0, 3 | nu | 0 e deja în RAM |
+
+Fault-uri LRU pe acest șir: **5** (mai puțin decât FIFO aici).
+
+> [!TIP]
+> **FIFO** = „cine a intrat primul”. **LRU** = „cine n-a mai fost folosit de mult”. LRU e adesea mai bun în practică, dar mai costisitor de urmărit exact.
+</script>
+</section>
+
+
+<section class="lesson" id="s4" data-num="4" data-title="Concurență">
+<script type="text/markdown">
+### De ce e o problemă
+
+Pe un sistem modern rulează **mai multe procese/fire** care pot partaja date. Dacă două fire modifică aceeași variabilă **în același timp**, rezultatul poate depinde de ordinea exactă a instrucțiunilor — greu de reprodus.
+
+### Race condition — exemplu scurt
+
+Cont comun: `sold = 100`.  
+Două operații aproape simultane: „scoate 30” și „scoate 20”.
+
+| Pas (rău) | Fir A | Fir B | sold |
+|---|---|---|---|
+| 1 | citește 100 | | 100 |
+| 2 | | citește 100 | 100 |
+| 3 | scrie 100−30=70 | | 70 |
+| 4 | | scrie 100−20=80 | **80** |
+
+Ar fi trebuit **50**. Asta e o **race condition**: rezultatul depinde de „cursa” dintre fire.
+
+### Secțiune critică și excludere mutuală
+
+- **Secțiune critică** = porțiunea de cod care accesează resursa partajată.
+- **Excludere mutuală** = la un moment dat, **un singur** fir e în secțiunea critică.
+
+### Mutex și semafor — analogii
+
+| Mecanism | Analogie | Ideea |
+|---|---|---|
+| **Mutex** | un **lacăt** cu o singură cheie | doar un fir „ține lacătul”; ceilalți așteaptă |
+| **Semafor** | un **contor de locuri** (ex. 3 locuri de parcare) | permite până la *N* accesări simultane; 0 = așteaptă |
+
+Nu implementăm aici — rețineți rolul: **sincronizare**, ca să evitați race conditions.
+
+> [!WARN]
+> Mutex/semafor greșit folosite pot duce la **deadlock** (secțiunea următoare) sau la încetiniri. Ideea e „protejați datele partajate”, nu „puneți lacăt peste tot”.
+</script>
+</section>
+
+
+<section class="lesson" id="s5" data-num="5" data-title="Deadlock">
+<script type="text/markdown">
+### Ce este
+
+**Deadlock** = un set de procese așteaptă fiecare o resursă ținută de altul din set — **nimeni nu mai înaintează**.
+
+### Cele 4 condiții (Coffman)
+
+Deadlock-ul apare doar dacă **toate** sunt adevărate simultan:
+
+1. **Excludere mutuală** — resursa nu poate fi folosită de doi odată.
+2. **Hold and wait** — un proces ține o resursă și așteaptă alta.
+3. **Fără preempție** — resursa nu i se poate lua forțat; o eliberează singur.
+4. **Așteptare circulară** — lanț P1 așteaptă P2, P2 așteaptă P1 (sau mai lung).
+
+### Exemplu simplu (2 procese, 2 resurse)
+
+Resurse: **Imprimantă (I)** și **Scanner (S)** — câte un exemplar.
+
+| Moment | Proces A | Proces B |
+|---|---|---|
+| 1 | ia Imprimanta | |
+| 2 | | ia Scannerul |
+| 3 | cere Scannerul → **așteaptă** | |
+| 4 | | cere Imprimanta → **așteaptă** |
+
+A așteaptă S (ținut de B); B așteaptă I (ținut de A) → **deadlock**.
+
+### Prevenire vs evitare
+
+| Abordare | Ideea | Exemplu de idee |
+|---|---|---|
+| **Prevenire** | spargeți **una** din cele 4 condiții | ex. „cere toate resursele odată” (evită hold-and-wait) |
+| **Evitare** | la fiecare alocare, verificați că rămâneți într-o **stare sigură** | algoritmul bancherului |
+
+### Algoritmul bancherului — doar ideea
+
+Bancă / SO: „**nu împrumut (nu aloc) dacă după asta sistemul ar putea ajunge într-o stare nesigură**” — adică o stare din care s-ar putea bloca toți.
+
+Nu construim matrici aici. Rețineți propoziția: **refuzăm o cerere care ar duce la risc de deadlock**, chiar dacă resursa e liberă momentan.
+</script>
+</section>
+
+
+<section class="lesson" id="s6" data-num="6" data-title="Rețea (nivel SO)">
+<script type="text/markdown">
+### Vocabular minim
+
+| Termen | Semnificație pe scurt |
+|---|---|
+| **IP** | adresa unui calculator în rețea (ex. `192.168.1.10`) |
+| **Port** | „ușa” unei aplicații pe acel calculator (ex. 80 HTTP, 443 HTTPS) |
+| **DNS** | traduce nume (`google.com`) în adresă IP |
+
+Adresa completă a unui serviciu e ideea **IP + port**.
+
+### TCP vs UDP
+
+| | **TCP** | **UDP** |
+|---|---|---|
+| Ideea | conexiune, livrare **fiabilă**, ordine | datagrame, **rapid**, fără garanții |
+| Analogie | telefon / scrisoare cu confirmare | carte poștală |
+| Tipic pentru | web, fișiere, SSH | DNS rapid, streaming, jocuri (uneori) |
+
+### Comenzi de ilustrare
+
+| Scop | Linux | Windows |
+|---|---|---|
+| Test conectivitate | `ping` | `ping` |
+| Adrese de rețea | `ip a` / `ip addr` | `ipconfig` / `Get-NetIPAddress` |
+| DNS | `nslookup` / `dig` | `nslookup` / `Resolve-DnsName` |
+</script>
+
+<div class="term" data-title="ping, IP, DNS" data-desc="Comenzi de orientare în rețea — aceleași idei pe Linux și Windows.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ping -c 2 8.8.8.8", "out": "PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.\n64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=12.4 ms\n64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=11.9 ms\n\n--- 8.8.8.8 ping statistics ---\n2 packets transmitted, 2 received, 0% packet loss"},
+    {"cmd": "ip -br a", "out": "lo               UNKNOWN        127.0.0.1/8 ::1/128\neth0             UP             192.168.1.20/24"},
+    {"cmd": "nslookup example.com", "out": "Server:\t\t127.0.0.53\nAddress:\t127.0.0.53#53\n\nNon-authoritative answer:\nName:\texample.com\nAddress: 93.184.216.34"}
+  ],
+  "windows": [
+    {"cmd": "ping -n 2 8.8.8.8", "out": "Pinging 8.8.8.8 with 32 bytes of data:\nReply from 8.8.8.8: bytes=32 time=12ms TTL=117\nReply from 8.8.8.8: bytes=32 time=11ms TTL=117\n\nPing statistics for 8.8.8.8:\n    Packets: Sent = 2, Received = 2, Lost = 0 (0% loss)"},
+    {"cmd": "ipconfig", "out": "Windows IP Configuration\n\nEthernet adapter Ethernet:\n   IPv4 Address. . . . . . . . . . . : 192.168.1.20\n   Subnet Mask . . . . . . . . . . . : 255.255.255.0\n   Default Gateway . . . . . . . . . : 192.168.1.1"},
+    {"cmd": "nslookup example.com", "out": "Server:  dns.home.local\nAddress:  192.168.1.1\n\nNon-authoritative answer:\nName:    example.com\nAddress:  93.184.216.34"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!INFO]
+> `ping` reușit ≠ „internetul merge complet”; arată doar că gazda răspunde la ICMP (uneori e blocat de firewall).
+</script>
+</section>
+
+
+<section class="lesson" id="s7" data-num="7" data-title="Permisiuni (recapit)">
+<script type="text/markdown">
+### Două modele, aceeași idee
+
+Cine poate citi / scrie / executa un fișier sau un folder?
+
+| | **Linux** (lecția 2) | **Windows** (lecția 3) |
+|---|---|---|
+| Model | `rwx` pe **proprietar / grup / alții** | **ACL** pe utilizatori și grupuri |
+| Vizualizare | `ls -l` | `icacls` / Proprietăți → Securitate |
+| Setare tipică | `chmod u+x`, `chmod 755` | `icacls … /grant`, Explorer |
+| Privilegii elevate | `sudo` | Run as administrator / **UAC** |
+| Identitate | `whoami`, `id` | `whoami`, `$env:USERNAME` |
+
+Nu reluăm administrarea avansată — doar harta mentală:
+
+1. Fiecare fișier are **reguli de acces**.
+2. Utilizatorul obișnuit ≠ administrator.
+3. Elevarea privilegiilor e **puternică** și trebuie folosită rar.
+</script>
+</section>
+
+
+<section class="lesson" id="s8" data-num="8" data-title="Rezumat">
+<script type="text/markdown">
+### Hartă de reținut
+
+| Temă | Propoziția-cheie |
+|---|---|
+| Ierarhia memoriei | rapid & mic aproape de CPU; lent & mare pe disc |
+| Memorie virtuală | spațiu logic ≥ RAM; pagini în RAM sau pe swap |
+| Page fault | pagina lipsește din RAM → SO o aduce de pe disc |
+| FIFO | iese pagina **intrată** cea mai demult |
+| LRU | iese pagina **folosită** cea mai demult |
+| Race condition | rezultat greșit din interleaving pe date partajate |
+| Mutex / semafor | lacăt (1) / contor de locuri (N) |
+| Deadlock | așteptare circulară + cele 4 condiții Coffman |
+| Bancherul | nu alocăm dacă starea ar deveni nesigură |
+| Rețea | IP + port; DNS traduce nume → IP; TCP sigur, UDP rapid |
+| Permisiuni | Linux `rwx` / Windows ACL; `sudo` ↔ Run as admin |
+</script>
+</section>
+
+
+<section class="lesson" id="s9" data-num="9" data-title="Greșeli frecvente">
+<script type="text/markdown">
+### Ce se confundă des
+
+| Greșeală | Clarificare |
+|---|---|
+| „Page fault = program crash” | Nu neapărat — e mecanismul normal al memoriei virtuale |
+| „FIFO = LRU” | FIFO după **ordine de intrare**; LRU după **ultimele folosiri** |
+| „Mutex și semafor sunt la fel” | Mutex ≈ 1 loc; semaforul poate avea **N** locuri |
+| „Deadlock = orice așteptare” | Trebuie **cerc** + celelalte condiții Coffman |
+| „Bancherul e un tabel de memorat” | Rețineți **ideea** de stare sigură / nesigură |
+| „TCP și UDP fac același lucru” | TCP e fiabil; UDP e ușor și fără garanții |
+</script>
+</section>
+
+
+<section class="lesson" id="s10" data-num="10" data-title="Autoverificare">
+<script type="text/markdown">
+Răspundeți mai întâi singuri, apoi deschideți soluția.
+</script>
+
+<details class="qa"><summary>1. Ordonați pe scurt ierarhia memoriei de la cel mai rapid la cel mai lent.</summary><div class="qa-a">Registre → cache → RAM → disc (inclusiv swap).</div></details>
+
+<details class="qa"><summary>2. Ce este memoria virtuală, într-o frază?</summary><div class="qa-a">Spațiul de adrese <strong>logic</strong> al unui proces, care poate fi mai mare decât RAM-ul fizic; paginile stau în RAM sau pe disc (swap).</div></details>
+
+<details class="qa"><summary>3. Ce se întâmplă la un page fault?</summary><div class="qa-a">Pagina cerută nu e în RAM; SO-ul o aduce de pe disc (poate înlocuind altă pagină) și procesul reia execuția.</div></details>
+
+<details class="qa"><summary>4. Care e diferența de idee între FIFO și LRU?</summary><div class="qa-a">FIFO scoate pagina <strong>încărcată</strong> cea mai demult; LRU scoate pagina <strong>folosită</strong> cea mai demult.</div></details>
+
+<details class="qa"><summary>5. Dați un exemplu scurt de race condition.</summary><div class="qa-a">Două fire citesc același <code>sold</code>, calculează local și scriu înapoi — una dintre actualizări se poate pierde.</div></details>
+
+<details class="qa"><summary>6. Mutex vs semafor — analogia?</summary><div class="qa-a">Mutex = <strong>lacăt</strong> (un singur deținător). Semafor = <strong>contor de locuri</strong> (până la N accesări).</div></details>
+
+<details class="qa"><summary>7. Care sunt cele 4 condiții Coffman?</summary><div class="qa-a">Excludere mutuală; hold and wait; fără preempție; așteptare circulară.</div></details>
+
+<details class="qa"><summary>8. Ce idee are algoritmul bancherului?</summary><div class="qa-a">Nu alocă o resursă dacă după alocare sistemul ar ajunge într-o <strong>stare nesigură</strong> (risc de deadlock).</div></details>
+
+<details class="qa"><summary>9. TCP vs UDP — o frază fiecare.</summary><div class="qa-a">TCP: conexiune, livrare fiabilă. UDP: rapid, fără garanții de livrare/ordine.</div></details>
+
+<details class="qa"><summary>10. Ce face DNS?</summary><div class="qa-a">Traduce un <strong>nume</strong> de gazdă (ex. <code>example.com</code>) într-o adresă <strong>IP</strong>.</div></details>
+</section>
+
+
+            <footer class="page-foot">
+                <p>Lecția 4 din planul de curs SO. Accent pe <strong>idei</strong>, nu pe formule sau algoritmi pe matrice. Comenzile de rețea din terminale sunt <strong>simulate</strong>.</p>
+            </footer>
+        </main>
+    </div>
+
+    <button class="icon-btn to-top" type="button" aria-label="Înapoi sus">↑ Sus</button>
+    <script src="assets/app.js"></script>
+    <script src="../../assets/course-nav.js"></script>
+</body>
+</html>

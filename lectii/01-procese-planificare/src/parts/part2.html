@@ -1,72 +1,51 @@
-<section class="lesson" id="s2" data-num="2" data-title="Procese: stări, PCB, fire">
+<section class="lesson" id="s4" data-num="4" data-title="Procese și stări">
 <script type="text/markdown">
-### 2.1. Ce este un proces — analogie
+### Ce este un proces
 
-Pe disc ai un **program** (fișier): de exemplu `firefox.exe` sau `/usr/bin/firefox`. E ca o rețetă pe hârtie.
+Un **program** este un fișier pe disc (ex. `firefox`, `notepad.exe`) — un set de instrucțiuni.
 
-Când îl pornești, SO-ul creează un **proces**: rețeta „gătită” acum — cu ingrediente (date în RAM), ustensile (fișiere deschise) și un număr de comandă (**PID** = *Process ID*).
+Un **proces** este o **instanță în execuție** a unui program: ocupă memorie, are un identificator (**PID**), fișiere deschise și o stare curentă. Același program poate genera mai multe procese simultan.
 
 | | Program | Proces |
 |---|---|---|
-| Unde trăiește | pe disc | în memorie, „viu” |
-| Câte poți avea | un fișier | **mai multe** procese din același program |
-| Identificare | cale / nume fișier | **PID** (număr) |
+| Locație | pe disc | în memorie, activ |
+| Multiplicitate | un fișier | una sau mai multe instanțe |
+| Identificare | cale / nume | **PID** |
 
-Poți deschide Firefox de două ori (sau multe tab-uri ca procese/fire): același program, PID-uri diferite.
+### Stările unui proces
 
-### 2.2. Stările tipice ale unui proces
+Un proces nu rulează permanent pe CPU. Trece prin stări standard:
 
-Un proces nu rulează mereu. Trece prin stări, ca o persoană la ghișeu:
+| Stare | Semnificație |
+|---|---|
+| **New** (nou) | tocmai creat; SO-ul îl pregătește |
+| **Ready** (gata) | așteaptă alocarea procesorului; poate rula imediat |
+| **Running** (rulează) | execută instrucțiuni pe CPU |
+| **Waiting / Blocked** (blocat) | așteaptă un eveniment (I/O, semnal); chiar cu CPU liber nu poate continua |
+| **Terminated** (terminat) | a încheiat; resursele vor fi eliberate |
 
-| Stare | Sens pe limba ta | Exemplu |
-|---|---|---|
-| **nou** | tocmai creat, încă nu e în coadă | ai dat dublu-clic, SO-ul îl pregătește |
-| **gata (ready)** | așteaptă la rând la CPU | vrea să calculeze, dar altcineva e la „casă” |
-| **rulează (running)** | are procesorul acum | calculează / execută instrucțiuni |
-| **blocat (waiting)** | așteaptă altceva, nu CPU | citește de pe disc, așteaptă rețeaua, un click |
-| **terminat** | a terminat; SO-ul curăță | ai închis fereastra |
+Tranziții frecvente:
 
-**Preempție:** planificatorul ia CPU-ul de la un proces care *putea* continua și îl dă altuia (din *rulează* → *gata*). Așa simți multitasking-ul.
+- *Ready → Running* — planificatorul îi acordă CPU;
+- *Running → Ready* — **preempție** (i se ia CPU-ul temporar);
+- *Running → Waiting* — așteaptă I/O sau un eveniment;
+- *Waiting → Ready* — evenimentul s-a produs;
+- *Running → Terminated* — procesul s-a încheiat.
 
 > [!INFO]
-> Diferență importantă: **gata** = „pot rula imediat, dă-mi CPU”. **blocat** = „chiar dacă CPU e liber, tot nu pot — aștept I/O”.
-</script>
+> **Ready ≠ Waiting.** Ready așteaptă CPU. Waiting așteaptă altceva (disc, rețea, input).
 
-<div class="sim" data-kind="states" data-title="Simulator: stările unui proces" data-desc="Pornește din «nou». Apasă doar săgețile oferite — vei vedea ce tranziții sunt legale. Din «rulează» poți merge la gata (preempție), blocat (I/O) sau terminat."></div>
+### Observarea proceselor în sistem
 
-<script type="text/markdown">
-### 2.3. PCB și comutarea contextului
+Pentru a vedea procesele active:
 
-Kernelul ține pentru fiecare proces o fișă: **PCB** (*Process Control Block*). Conține, printre altele:
-
-- PID și starea;
-- registrele CPU (unde a rămas execuția);
-- informații despre memorie și fișiere deschise;
-- prioritate.
-
-**Comutarea contextului** (*context switch*) e schimbarea de la procesul A la B:
-
-1. salvează starea lui A în PCB-ul lui A;
-2. planificatorul alege B;
-3. încarcă starea lui B din PCB-ul lui B;
-4. B continuă ca și cum nu s-ar fi oprit.
-
-E utilă, dar **nu e gratuită** — durează microsecunde. De aceea, la Round Robin, dacă tai timpul prea mărunt, pierzi timp doar schimbând procesele.
-
-### 2.4. Proces vs fir de execuție (thread)
-
-Un **fir** e un „fir de execuție” înăuntrul unui proces. Simplificat:
-
-| | Proces | Fir (thread) |
+| Scop | Linux | Windows |
 |---|---|---|
-| Memorie | spațiu propriu (în general izolat de alții) | **partajează** memoria procesului-părinte |
-| Creare | mai grea / mai scumpă | mai ușoară |
-| Imagine | un restaurant întreg | un ospătar în același restaurant |
-
-Un proces are **cel puțin un** fir. Dacă un browser folosește mai multe fire, ele văd aceleași date — rapid, dar trebuie grijă (concurență = lecția 3).
+| listă | `ps aux`, `top` | `tasklist`, Task Manager, `Get-Process` |
+| câmp esențial | **PID** | **PID** |
 </script>
 
-<div class="term" data-title="Lista proceselor" data-desc="Învață să citești PID, CPU și memorie — nu doar «o listă lungă».">
+<div class="term" data-title="Lista proceselor" data-desc="Identificați PID, consumul de CPU/memorie și numele programului.">
 <script type="application/json">
 {
   "linux": [
@@ -80,43 +59,258 @@ Un proces are **cel puțin un** fir. Dacă un browser folosește mai multe fire,
 </div>
 
 <script type="text/markdown">
-### Cum citești ieșirea (pas cu pas)
-
-**Linux — `ps aux`**
-
-| Coloană | Ce înseamnă pentru tine |
+| Coloană relevantă | Rol |
 |---|---|
-| `USER` | cine „deține” procesul (`student`, `root`…) |
-| `PID` | numărul procesului — îl folosești la `kill` |
-| `%CPU` | cât procesor consumă acum (relativ) |
-| `%MEM` | câtă memorie (relativ) |
-| `STAT` | stare scurtă: `R` ≈ rulează, `S` ≈ sleep/așteaptă… |
-| `COMMAND` | ce program e |
+| `PID` / `Id` | identificatorul folosit la pornire/oprire |
+| `%CPU` / `CPU` | încărcare procesor |
+| `%MEM` / `Mem Usage` | memorie |
+| `COMMAND` / `Image Name` | programul asociat |
+</script>
+</section>
 
-**Windows — `tasklist`**
 
-| Coloană | Sens |
-|---|---|
-| `Image Name` | numele executabilului |
-| `PID` | același rol ca pe Linux |
-| `Mem Usage` | memorie ocupată |
+<section class="lesson" id="s5" data-num="5" data-title="PCB (Process Control Block)">
+<script type="text/markdown">
+### Ce este PCB
 
-În PowerShell, `Get-Process` e mai bogat (CPU, WorkingSet). Task Manager e varianta grafică.
+**PCB** (*Process Control Block*) este structura de date din kernel care descrie un proces. Pentru fiecare proces există un PCB.
 
-> [!TIP]
-> `ps` / `tasklist` = fotografie. `top` / `htop` (Linux) și Task Manager = film live care se actualizează.
+Conține, pe scurt:
+
+- PID și starea curentă;
+- contextul CPU (registre, contor de program) — unde a rămas execuția;
+- informații despre memorie și resurse (fișiere deschise);
+- prioritate / date pentru planificare.
+
+### De ce e necesar
+
+La **comutarea de context** (*context switch*), SO-ul:
+
+1. salvează starea procesului curent în PCB-ul său;
+2. alege următorul proces;
+3. încarcă starea din PCB-ul noului proces.
+
+Fără PCB, kernelul nu ar putea „îngheța” și relua corect un proces. Comutarea are un cost (microsecunde): de aceea politicile de planificare trebuie alese cu grijă (ex. quantum prea mic la Round Robin → prea multe comutări).
+</script>
+</section>
+
+
+<section class="lesson" id="s6" data-num="6" data-title="Planificarea procesorului">
+<script type="text/markdown">
+### Ce este planificarea
+
+**Planificarea CPU** (*CPU scheduling*) este mecanismul prin care SO-ul alege **care proces din starea Ready** primește procesorul și pentru cât timp.
+
+Planificatorul (*scheduler*) lucrează asupra cozii de procese gata de execuție.
+
+### De ce avem nevoie de planificare
+
+Procesorul e o resursă **limitată**. În același timp pot exista zeci de procese Ready. Fără o politică clară:
+
+- un singur proces lung ar putea **ocupa CPU-ul** pe termen nedefinit;
+- aplicațiile interactive ar părea „înghețate”;
+- unele procese ar putea rămâne **neservite** (*starvation*);
+- utilizarea globală a sistemului ar scădea (CPU idle în timp ce alții așteaptă greșit).
+
+Planificarea asigură **multitasking-ul**: impresia că mai multe programe rulează simultan, deși pe un nucleu CPU se execută pe rând.
+
+### Criterii de evaluare
+
+| Criteriu | Ce măsoară | De ce contează |
+|---|---|---|
+| **Timp de așteptare** | cât stă procesul în Ready până rulează | cozi lungi = sistem lent |
+| **Timp de răspuns** | cât durează până utilizatorul vede o reacție | esențial pentru UI, terminal |
+| **Timp de întoarcere** (*turnaround*) | de la sosire până la terminare | relevant pentru job-uri complete |
+| **Throughput** | câte procese se termină pe unitatea de timp | eficiența globală |
+| **Echitate** | evitarea *starvation* | niciun proces nu trebuie ignorat pe termen lung |
+| **Utilizarea CPU** | procentul de timp în care CPU lucrează util | resursa nu trebuie irosită |
+
+Nu există un algoritm optim pentru **toate** criteriile simultan; fiecare politică face un compromis.
+
+### Prezentare generală a algoritmilor
+
+| Algoritm | Ideea | Preempție |
+|---|---|---|
+| **FCFS** | primul sosit, primul servit | nu |
+| **SJF** | mai întâi job-ul cu burst time cel mai mic | de obicei nu (varianta SRTF e preemptivă) |
+| **Round Robin** | felii egale de timp (quantum), apoi la coadă | da |
+| **Priorități** | procesul cu prioritate mai mare rulează primul | da / nu, după variantă |
+
+### Date comune pentru exemple
+
+Folosim același set de **4 procese** la FCFS, SJF și Round Robin:
+
+| Proces | Arrival Time | Burst Time (durată) | Ordine de sosire |
+|---|---|---|---|
+| P1 | 0 | 6 | 1 |
+| P2 | 1 | 3 | 2 |
+| P3 | 2 | 4 | 3 |
+| P4 | 3 | 2 | 4 |
+
+*Arrival Time* = momentul sosirii în sistem. *Burst Time* = durata necesară pe CPU. *Ordine de sosire* = nr. de ordine (1 = primul sosit).
+
+### FCFS — First Come First Served
+
+Procesele se execută în ordinea sosirii (**FIFO**), fiecare până la final. Simplu, dar un job lung poate întârzia pe toți din spate (*convoy effect*).
+
+**Ordinea de execuție (după arrival):** P1 → P2 → P3 → P4
+
+**Diagramă Gantt:**
+
+| Interval | 0–6 | 6–9 | 9–13 | 13–15 |
+|---|---|---|---|---|
+| Proces | P1 | P2 | P3 | P4 |
+
+**Tabel rezultate:**
+
+| Proces | Arrival | Burst | Start | Finish | Waiting = Start − Arrival | Turnaround = Finish − Arrival |
+|---|---|---|---|---|---|---|
+| P1 | 0 | 6 | 0 | 6 | 0 | 6 |
+| P2 | 1 | 3 | 6 | 9 | 5 | 8 |
+| P3 | 2 | 4 | 9 | 13 | 7 | 11 |
+| P4 | 3 | 2 | 13 | 15 | 10 | 12 |
+
+Waiting mediu = (0+5+7+10)/4 = **5,5**. Turnaround mediu = (6+8+11+12)/4 = **9,25**.
+
+### SJF — Shortest Job First (non-preemptiv)
+
+La fiecare alegere, dintre procesele **deja sosite** se ia cel cu **burst time** cel mai mic. Reduce waiting-ul mediu, dar job-urile lungi pot aștepta mult.
+
+**Pași:** la t=0 rulează P1 (singurul sosit). La t=6 sunt Ready P2, P3, P4 → cel mai scurt e **P4** (2), apoi **P2** (3), apoi **P3** (4).
+
+**Ordinea de execuție:** P1 → P4 → P2 → P3
+
+**Diagramă Gantt:**
+
+| Interval | 0–6 | 6–8 | 8–11 | 11–15 |
+|---|---|---|---|---|
+| Proces | P1 | P4 | P2 | P3 |
+
+**Tabel rezultate:**
+
+| Proces | Arrival | Burst | Start | Finish | Waiting | Turnaround |
+|---|---|---|---|---|---|---|
+| P1 | 0 | 6 | 0 | 6 | 0 | 6 |
+| P2 | 1 | 3 | 8 | 11 | 7 | 10 |
+| P3 | 2 | 4 | 11 | 15 | 9 | 13 |
+| P4 | 3 | 2 | 6 | 8 | 3 | 5 |
+
+Waiting mediu = (0+7+9+3)/4 = **4,75** (mai bun decât FCFS pe acest exemplu).
 </script>
 
-<div class="term" data-title="PowerShell: Get-Process" data-desc="Filtrează după nume — util când lista e uriașă.">
-<script type="application/json">
-{
-  "linux": [
-    {"cmd": "ps -C firefox -o pid,user,%cpu,%mem,cmd", "out": "  PID USER     %CPU %MEM CMD\n 2140 student   0.3  1.8 /usr/lib/firefox/firefox"}
-  ],
-  "windows": [
-    {"cmd": "Get-Process | Where-Object {$_.ProcessName -match 'chrome|powershell'} | Format-Table Id,ProcessName,CPU,WorkingSet -AutoSize", "out": "  Id ProcessName     CPU WorkingSet\n  -- -----------     --- ----------\n6104 chrome       12.45  215154688\n7720 powershell    1.02   65744896"}
-  ]
-}
+<figure class="schema">
+    <img src="assets/schema-fcfs-sjf.png" alt="Schemă: coadă Ready, Running, Waiting, Exit — relevantă pentru FCFS și SJF" width="720" height="405">
+    <figcaption><strong>Schemă pentru FCFS / SJF.</strong> Procesele din <em>New</em> intră în coada Ready. Din coadă se selectează următorul proces către <em>Running</em>. La FCFS, ordinea e „primul sosit”. La SJF, ordinea în coadă ține cont de burst time („Added as per burst time”). Din Running: fie <em>Exit</em> (terminare), fie <em>Waiting</em> (I/O); la finalizarea I/O, procesul revine în coadă.</figcaption>
+</figure>
+
+<script type="text/markdown">
+**Cum citiți schema (FCFS vs SJF):**
+
+1. **New → coadă** — procesul e admis; la SJF, poziția poate depinde de burst time.
+2. **Coadă → Running** — se ia „primul” după regula algoritmului (FIFO la FCFS; cel mai scurt la SJF).
+3. **Running → Exit** — terminare (*Release*).
+4. **Running → Waiting** — așteptare I/O; apoi revenire în coadă.
+
+### Round Robin (RR)
+
+Fiecărui proces i se alocă un **quantum** (felie de timp). Dacă nu termină în quantum, este preemptat și pus **la sfârșitul** cozii Ready. Potrivit pentru sisteme interactive: nimeni nu monopolizează CPU-ul.
+
+| Quantum | Efect |
+|---|---|
+| prea mare | RR se apropie de FCFS |
+| prea mic | multe context switch-uri → overhead |
 </script>
-</div>
+
+<figure class="schema">
+    <img src="assets/schema-rr.png" alt="Diagramă de flux Round Robin: Ready Queue, quantum, terminare sau revenire în coadă" width="720" height="900">
+    <figcaption><strong>Schemă Round Robin.</strong> Se selectează un proces din Ready Queue. Dacă burst-ul rămas &lt; quantum, se execută până la final și trece în Termination. Altfel rulează exact un quantum; dacă nu a terminat, revine în Ready Queue.</figcaption>
+</figure>
+
+<script type="text/markdown">
+**Parcurgerea schemei RR:**
+
+1. **Ready Queue → Select a process** — planificatorul ia următorul proces.
+2. **Burst Time &lt; Quantum?**
+   - **Da** → *Execute till Completion* → **Termination**.
+   - **Nu** → *Execute for Time Quantum*.
+3. După expirarea quantumului: **Process Executed Completely?**
+   - **Da** → Termination.
+   - **Nu** → procesul se întoarce în **Ready Queue** (preempție).
+
+**Exemplu** (aceleași 4 procese), **quantum = 2**:
+
+La fiecare 2 unități, procesul curent e preemptat (dacă mai are de lucru) și trece la sfârșitul cozii.
+
+**Diagramă Gantt (RR, q=2):**
+
+| Interval | 0–2 | 2–4 | 4–6 | 6–8 | 8–10 | 10–11 | 11–13 | 13–15 |
+|---|---|---|---|---|---|---|---|---|
+| Proces | P1 | P2 | P3 | P1 | P4 | P2 | P3 | P1 |
+
+*Citire pe scurt:* P1 rulează 0–2 (rămân 4) → la coadă; P2 2–4 (rămâne 1); P3 4–6 (rămân 2); P1 6–8 (rămân 2); P4 8–10 (**termină**); P2 10–11 (**termină**); P3 11–13 (**termină**); P1 13–15 (**termină**).
+
+**Tabel rezultate:**
+
+| Proces | Arrival | Burst | Finish | Waiting = Turnaround − Burst | Turnaround = Finish − Arrival |
+|---|---|---|---|---|---|
+| P1 | 0 | 6 | 15 | 9 | 15 |
+| P2 | 1 | 3 | 11 | 7 | 10 |
+| P3 | 2 | 4 | 13 | 7 | 11 |
+| P4 | 3 | 2 | 10 | 5 | 7 |
+
+Waiting mediu = (9+7+7+5)/4 = **7**.  
+Avantajul RR: procesele primesc CPU **în felii** (timp de răspuns mai bun decât FCFS), chiar dacă waiting-ul mediu poate fi mai mare decât la SJF.
+
+### Planificare pe priorități
+
+Fiecărui proces i se asociază o **prioritate** (aici: număr **mai mic** = prioritate **mai mare**). Variantă non-preemptivă: odată început, procesul rulează până la final; la alegere se ia cel cu prioritatea cea mai bună dintre cele Ready.
+
+**Date:**
+
+| Proces | Arrival Time | Burst Time | Prioritate | Ordine de sosire |
+|---|---|---|---|---|
+| P1 | 0 | 6 | 3 | 1 |
+| P2 | 1 | 3 | 1 | 2 |
+| P3 | 2 | 4 | 4 | 3 |
+| P4 | 3 | 2 | 2 | 4 |
+
+**Pași:** la t=0 rulează P1. La t=6 sunt Ready P2, P3, P4 → cea mai bună prioritate e **P2** (1), apoi **P4** (2), apoi **P3** (4).
+
+**Diagramă Gantt:**
+
+| Interval | 0–6 | 6–9 | 9–11 | 11–15 |
+|---|---|---|---|---|
+| Proces | P1 | P2 | P4 | P3 |
+
+**Tabel rezultate:**
+
+| Proces | Arrival | Burst | Prioritate | Start | Finish | Waiting | Turnaround |
+|---|---|---|---|---|---|---|---|
+| P1 | 0 | 6 | 3 | 0 | 6 | 0 | 6 |
+| P2 | 1 | 3 | 1 | 6 | 9 | 5 | 8 |
+| P3 | 2 | 4 | 4 | 11 | 15 | 9 | 13 |
+| P4 | 3 | 2 | 2 | 9 | 11 | 6 | 8 |
+
+Waiting mediu = (0+5+9+6)/4 = **5**. Riscul pe termen lung: *starvation* pentru priorități slabe — se atenuează prin **aging**.
+</script>
+
+<figure class="schema">
+    <img src="assets/schema-priority.png" alt="Schemă priority scheduling: Classifier, High/Low priority queue, Links, Outputs" width="900" height="400">
+    <figcaption><strong>Schemă Priority Scheduling.</strong> Sosirile trec printr-un <em>Classifier</em> care le repartizează pe cozi de prioritate (ex. High / Low). Resursa comună (<em>Links</em> / CPU) servește preferențial coada de prioritate înaltă; ieșirile sunt procesele (sau pachetele) deja deservite.</figcaption>
+</figure>
+
+<script type="text/markdown">
+**Parcurgerea schemei de priorități:**
+
+1. **Arrivals** — procese noi intră în sistem.
+2. **Classifier** — decide nivelul de prioritate.
+3. **High / Low priority queue** — așteptare separată pe clase.
+4. **Links (CPU / resursă)** — selectează din cozi după regulă (de regulă high înaintea low).
+5. **Outputs** — execuție finalizată (sau transmisie, în analogia de rețea).
+
+În SO, „Links” corespunde practic **procesorului** (sau nucleului care execută). Ideea rămâne: clasificare → cozi pe prioritate → deservire preferențială.
+
+> [!INFO]
+> Planificatorii reali (Linux CFS, Windows) sunt mai elaborați, dar FCFS, SJF, RR și prioritățile rămân baza conceptuală.
+</script>
 </section>

@@ -398,42 +398,51 @@
             md.replaceWith(renderMarkdown(md.textContent));
         }
         $$(":scope > .term", sec).forEach(mountTerm);
-        $$(":scope > .sim[data-kind=states]", sec).forEach(mountStates);
-        $$(":scope > .sim[data-kind=sched]", sec).forEach(mountSched);
     }
 
-    function buildToc() {
-        const toc = $("#toc");
-        const lessons = $$("section.lesson");
-        toc.innerHTML = lessons.map((sec) => {
-            const id = sec.id;
-            const num = sec.dataset.num;
-            const title = sec.dataset.title;
-            return `<li><a href="#${id}" data-id="${id}"><span style="font-family:var(--mono);color:var(--accent)">${esc(num)}</span> ${esc(title)}</a></li>`;
-        }).join("");
-        $("#stat-sections").textContent = String(lessons.length);
-        $("#stat-demos").textContent = String($$(".term, .sim").length);
+    function updateStats() {
+        $("#stat-sections").textContent = String($$("section.lesson").length);
+        $("#stat-demos").textContent = String($$(".term").length);
         $("#stat-qa").textContent = String($$("details.qa").length);
     }
 
     function wireChrome() {
+        document.getElementById("nav-backdrop")?.remove();
+
         const sidebar = $("#sidebar");
-        const backdrop = $("#nav-backdrop");
         const menuBtn = $("#menu");
-
-        function setNav(open) {
-            sidebar.classList.toggle("open", open);
-            backdrop.classList.toggle("open", open);
-            backdrop.setAttribute("aria-hidden", open ? "false" : "true");
-            menuBtn?.setAttribute("aria-expanded", open ? "true" : "false");
-            menuBtn && (menuBtn.textContent = open ? "✕" : "☰");
+        if (sidebar && menuBtn) {
+            const setNav = (open) => {
+                sidebar.classList.toggle("open", open);
+                menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+                menuBtn.setAttribute("aria-label", open ? "Închide temele" : "Deschide temele");
+                menuBtn.textContent = open ? "✕" : "☰";
+            };
+            menuBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                setNav(!sidebar.classList.contains("open"));
+            });
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") setNav(false);
+                if (e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+                    e.preventDefault();
+                    setNav(true);
+                    $("#search")?.focus();
+                }
+            });
+            const search = $("#search");
+            search?.addEventListener("input", () => {
+                const q = fold(search.value.trim());
+                let n = 0;
+                $$("#toc a, #toc .toc-soon").forEach((el) => {
+                    const show = !q || fold(el.textContent).includes(q);
+                    el.parentElement.hidden = !show;
+                    if (show) n++;
+                });
+                const empty = $("#toc-empty");
+                if (empty) empty.hidden = n > 0;
+            });
         }
-
-        menuBtn?.addEventListener("click", () => setNav(!sidebar.classList.contains("open")));
-        backdrop?.addEventListener("click", () => setNav(false));
-        sidebar?.addEventListener("click", (e) => {
-            if (e.target.closest("a[href^='#']")) setNav(false);
-        });
 
         const themeBtn = $("#theme");
         const apply = (m) => {
@@ -449,26 +458,6 @@
             apply(next);
         });
 
-        const search = $("#search");
-        search?.addEventListener("input", () => {
-            const q = fold(search.value.trim());
-            let n = 0;
-            $$("#toc a").forEach((a) => {
-                const show = !q || fold(a.textContent).includes(q);
-                a.parentElement.hidden = !show;
-                if (show) n++;
-            });
-            $("#toc-empty").hidden = n > 0;
-        });
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") setNav(false);
-            if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
-                e.preventDefault();
-                setNav(true);
-                search?.focus();
-            }
-        });
-
         const toTop = $(".to-top");
         const progress = $(".progress");
         window.addEventListener("scroll", () => {
@@ -477,19 +466,11 @@
             toTop.classList.toggle("show", scrollY > 500);
         }, { passive: true });
         toTop?.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
-
-        const obs = new IntersectionObserver((entries) => {
-            entries.forEach((en) => {
-                if (!en.isIntersecting) return;
-                $$("#toc a").forEach((a) => a.classList.toggle("active", a.dataset.id === en.target.id));
-            });
-        }, { rootMargin: "-40% 0px -50% 0px" });
-        $$("section.lesson").forEach((s) => obs.observe(s));
     }
 
     function boot() {
         $$("section.lesson").forEach(buildLesson);
-        buildToc();
+        updateStats();
         wireChrome();
     }
 

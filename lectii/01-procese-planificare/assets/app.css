@@ -145,17 +145,8 @@ a { color: var(--accent-2); }
 }
 .sidebar.open { transform: translateX(0); }
 
-.nav-backdrop {
-    display: none;
-    position: fixed;
-    inset: var(--topbar-h) 0 0;
-    z-index: 44;
-    background: rgba(8, 10, 18, 0.5);
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-}
-.nav-backdrop.open { display: block; }
+/* Overlay eliminat — burger doar deschide/închide drawer-ul */
+.nav-backdrop { display: none !important; }
 
 .search {
     display: flex; align-items: center; gap: 8px;
@@ -257,22 +248,36 @@ a { color: var(--accent-2); }
     margin: 12px 0;
     padding: 12px 14px;
     border-radius: var(--radius);
-    background: #0a0e14;
-    border: 1px solid var(--line);
+    background: #0f1419;
+    border: 1px solid #2a3340;
     overflow: auto;
     font: 500 13px/1.55 var(--mono);
-    color: #c8d4e0;
+    color: #e8eef4;
+}
+.prose pre code, .code-block code {
+    background: transparent;
+    color: #e8eef4;
+    padding: 0;
+    font: inherit;
 }
 :root[data-theme="light"] .prose pre,
-:root[data-theme="light"] .code-block {
-    background: #161c28;
-    color: #d7e0ea;
+:root[data-theme="light"] .code-block,
+:root[data-theme="light"] .prose pre code,
+:root[data-theme="light"] .code-block code,
+:root[data-theme="dark"] .prose pre,
+:root[data-theme="dark"] .code-block,
+:root[data-theme="dark"] .prose pre code,
+:root[data-theme="dark"] .code-block code {
+    background: #0f1419;
+    color: #e8eef4;
 }
 @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) .prose pre,
-    :root:not([data-theme="dark"]) .code-block {
-        background: #161c28;
-        color: #d7e0ea;
+    :root:not([data-theme="dark"]) .code-block,
+    :root:not([data-theme="dark"]) .prose pre code,
+    :root:not([data-theme="dark"]) .code-block code {
+        background: #0f1419;
+        color: #e8eef4;
     }
 }
 .table-wrap { overflow: auto; margin: 12px 0; }
@@ -377,6 +382,30 @@ a { color: var(--accent-2); }
     color: #fff;
 }
 .term-actions button:hover { filter: brightness(1.05); }
+
+.schema {
+    margin: 18px 0 24px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg-elev);
+    text-align: center;
+}
+.schema img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    border-radius: 8px;
+}
+.schema figcaption {
+    margin-top: 10px;
+    text-align: left;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.5;
+}
+.schema figcaption strong { color: var(--text); }
 
 .sim {
     margin: 18px 0 28px;

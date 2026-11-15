@@ -1,0 +1,124 @@
+<section class="lesson" id="s0" data-num="0" data-title="Obiective">
+<script type="text/markdown">
+### Ce veți învăța
+
+Lecție de **concepte** (nu laborator de comenzi): ideile pe care le întâlniți la examen, fără adâncime excesivă.
+
+| Bloc | Ce rețineți |
+|---|---|
+| Memorie | ierarhie, memorie virtuală, page fault, FIFO vs LRU |
+| Concurență | race condition, secțiune critică, mutex / semafor |
+| Deadlock | 4 condiții Coffman, exemplu, prevenire vs evitare, bancherul (idee) |
+| Rețea | IP, port, DNS, TCP vs UDP + `ping` / `ipconfig` |
+| Permisiuni | recapit: `rwx` / ACL (legătură cu lecțiile 2–3) |
+
+> [!TIP]
+> Scopul: să puteți **explica cu cuvintele voastre** fiecare idee, nu să memorați tabele uriașe.
+</script>
+</section>
+
+
+<section class="lesson" id="s1" data-num="1" data-title="Ierarhia memoriei">
+<script type="text/markdown">
+### De ce există mai multe „niveluri”
+
+CPU-ul e rapid; discul e lent. SO-ul și hardware-ul organizează memoria pe **niveluri**: cu cât e mai aproape de CPU, cu atât e mai rapidă și (de obicei) mai mică / mai scumpă.
+
+| Nivel | Unde | Vitează (idee) | Capacitate tipică |
+|---|---|---|---|
+| Registre | în CPU | foarte rapid | foarte mică |
+| Cache | lângă CPU | rapid | mică (KB–MB) |
+| RAM | memorie principală | medie | GB |
+| Disc / SSD | stocare | lent | mare (GB–TB) |
+
+**Schemă (sus = rapid, jos = lent):**
+
+| | |
+|---|---|
+| **CPU / registre** | |
+| ↓ | |
+| **Cache** | |
+| ↓ | |
+| **RAM** | |
+| ↓ | |
+| **Disc (inclusiv swap)** | |
+
+Ideea: programele „văd” un spațiu mare; datele folosite des stau cât mai sus în ierarhie.
+</script>
+</section>
+
+
+<section class="lesson" id="s2" data-num="2" data-title="Memorie virtuală și page fault">
+<script type="text/markdown">
+### Memorie virtuală — ideea
+
+Fiecare proces are un **spațiu de adrese logic** (virtual) care poate fi **mai mare** decât RAM-ul fizic disponibil.
+
+- SO-ul împarte memoria în **pagini** (blocuri de dimensiune fixă).
+- Unele pagini stau în **RAM**; altele pot sta pe disc, în zona de **swap** / fișier de paginare.
+- Procesul nu trebuie să știe unde e fizic fiecare pagină — SO-ul (+ MMU) traduce adresele.
+
+### Page fault
+
+**Page fault** = procesul cere o pagină care **nu e în RAM**.
+
+1. CPU generează o întrerupere (fault).
+2. SO-ul găsește pagina pe disc (sau o creează).
+3. O încarcă în RAM (poate trebuie să **scoată** altă pagină — *page replacement*).
+4. Procesul reia instrucțiunea.
+
+> [!INFO]
+> Un page fault nu e neapărat o „eroare de program” — e mecanismul normal al memoriei virtuale. Prea multe fault-uri → sistemul „thrashing” (tot timpul pe disc).
+</script>
+</section>
+
+
+<section class="lesson" id="s3" data-num="3" data-title="Înlocuire pagini: FIFO și LRU">
+<script type="text/markdown">
+### Problema
+
+RAM-ul e plin și trebuie adusă o pagină nouă. **Care pagină existentă scoatem?**
+
+Nu facem algoritmi pe biți aici — doar **ideea** + un exemplu mic (3 cadre în RAM).
+
+### Date comune
+
+Cadre disponibile în RAM: **3**.  
+Șirul de referințe (pagini cerute, în ordine): **7, 0, 1, 2, 0, 3, 0**
+
+### FIFO — First In, First Out
+
+Scoatem pagina aflată de **cel mai mult timp** în RAM (ca o coadă).
+
+| Pas | Cerere | Cadre (după) | Fault? |
+|---|---|---|---|
+| 1 | 7 | 7, —, — | da |
+| 2 | 0 | 7, 0, — | da |
+| 3 | 1 | 7, 0, 1 | da |
+| 4 | 2 | **2**, 0, 1 | da (iese 7) |
+| 5 | 0 | 2, 0, 1 | nu (0 e deja) |
+| 6 | 3 | 2, **3**, 1 | da (iese 0) |
+| 7 | 0 | 2, 3, **0** | da (iese 1) |
+
+Fault-uri FIFO pe acest șir: **6**.
+
+### LRU — Least Recently Used
+
+Scoatem pagina **folosită cel mai demult** (nu neapărat cea mai veche ca vârstă de încărcare).
+
+| Pas | Cerere | Cadre (după) | Fault? | Observație |
+|---|---|---|---|---|
+| 1 | 7 | 7, —, — | da | |
+| 2 | 0 | 7, 0, — | da | |
+| 3 | 1 | 7, 0, 1 | da | |
+| 4 | 2 | **2**, 0, 1 | da | iese 7 (cel mai demult folosit) |
+| 5 | 0 | 2, 0, 1 | nu | 0 e „proaspăt” |
+| 6 | 3 | 2, 0, **3** | da | iese 1 (mai demult decât 2 și 0) |
+| 7 | 0 | 2, 0, 3 | nu | 0 e deja în RAM |
+
+Fault-uri LRU pe acest șir: **5** (mai puțin decât FIFO aici).
+
+> [!TIP]
+> **FIFO** = „cine a intrat primul”. **LRU** = „cine n-a mai fost folosit de mult”. LRU e adesea mai bun în practică, dar mai costisitor de urmărit exact.
+</script>
+</section>

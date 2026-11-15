@@ -1,0 +1,132 @@
+<section class="lesson" id="s0" data-num="0" data-title="Obiective">
+<script type="text/markdown">
+### Ce veți învăța
+
+Această lecție e **practică**: comenzi Linux pe care le folosiți zilnic când lucrați cu fișiere și directoare.
+
+| Bloc | Conținut |
+|---|---|
+| Orientare | `pwd`, `cd`, `ls` (variante de afișare) |
+| Modificare | `mkdir`, `touch`, `cp`, `mv`, `rm` |
+| Citire & căutare | `cat`, `head`, `tail`, `find`, `grep` |
+| Extra | redirectare (`>`, `>>`, `\|`), `du`/`df`, `whoami` / permisiuni / `sudo` |
+
+Fiecare comandă importantă are un **terminal simulat**: Rulează / Arată tot / Copiază comenzile.
+
+> [!TIP]
+> Exersați pe WSL, o mașină virtuală sau un terminal Linux. Nu rulați `rm -r` pe directoare importante.
+</script>
+</section>
+
+
+<section class="lesson" id="s1" data-num="1" data-title="Noțiuni scurte">
+<script type="text/markdown">
+### Fișier, director, cale
+
+| Concept | Semnificație |
+|---|---|
+| **Fișier** | date pe disc (text, program, imagine…) |
+| **Director** (folder) | container pentru fișiere și alte directoare |
+| **Cale absolută** | începe de la rădăcină `/` (ex. `/home/student/docs`) |
+| **Cale relativă** | față de directorul curent (ex. `docs/a.txt`, `../`) |
+| **`~`** | directorul home al utilizatorului (ex. `/home/student`) |
+
+### Reguli importante pe Linux
+
+1. **Case-sensitive:** `Note.txt` ≠ `note.txt`.
+2. **`rm` șterge definitiv** (nu există coș de reciclare în terminalul clasic).
+3. Spațiile în nume se gestionează cu ghilimele: `"Proiect nou"` sau escape `\ `.
+
+### Ierarhia de bază (orientare)
+
+| Cale | Rol tipic |
+|---|---|
+| `/` | rădăcina sistemului de fișiere |
+| `/home` | directoarele utilizatorilor |
+| `/etc` | fișiere de configurare |
+| `/var` | date variabile (log-uri, cache…) |
+| `/bin`, `/usr/bin` | programe (comenzi) |
+</script>
+</section>
+
+
+<section class="lesson" id="s2" data-num="2" data-title="Orientare: pwd și cd">
+<script type="text/markdown">
+### Unde sunt? Încotro merg?
+
+| Comandă | Rol |
+|---|---|
+| `pwd` | *print working directory* — afișează directorul curent |
+| `cd cale` | schimbă directorul curent |
+| `cd ..` | un nivel în sus |
+| `cd ~` sau `cd` | revine în home |
+| `cd -` | revine la directorul anterior (util) |
+</script>
+
+<div class="term" data-title="pwd și cd" data-desc="Navigare de bază în arborele de directoare.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "pwd", "out": "/home/student"},
+    {"cmd": "cd Documents", "out": ""},
+    {"cmd": "pwd", "out": "/home/student/Documents"},
+    {"cmd": "cd ..", "out": ""},
+    {"cmd": "cd /etc", "out": ""},
+    {"cmd": "pwd", "out": "/etc"},
+    {"cmd": "cd ~", "out": ""},
+    {"cmd": "pwd", "out": "/home/student"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+> [!INFO]
+> Dacă `cd` reușește, de obicei **nu afișează nimic** — verificați cu `pwd`.
+</script>
+</section>
+
+
+<section class="lesson" id="s3" data-num="3" data-title="Listare: ls">
+<script type="text/markdown">
+### Variante utile de `ls`
+
+| Comandă | Ce face |
+|---|---|
+| `ls` | listează numele din directorul curent |
+| `ls -l` | listă „lungă”: permisiuni, proprietar, mărime, dată |
+| `ls -a` | include și fișierele ascunse (încep cu `.`) |
+| `ls -lh` | ca `-l`, dar mărimi „omenești” (K, M, G) |
+| `ls -R` | recursiv (și subdirectoarele) |
+| `ls -la` | combinație frecventă: lung + ascunse |
+</script>
+
+<div class="term" data-title="ls — tipuri de afișare" data-desc="Comparați ieșirea scurtă cu -l, -a și -lh.">
+<script type="application/json">
+{
+  "linux": [
+    {"cmd": "ls", "out": "Documents  Downloads  notes.txt  proiect"},
+    {"cmd": "ls -l", "out": "total 12\ndrwxr-xr-x 2 student student 4096 Nov 10 09:12 Documents\ndrwxr-xr-x 2 student student 4096 Nov 11 14:01 Downloads\n-rw-r--r-- 1 student student  220 Nov 14 18:30 notes.txt\ndrwxr-xr-x 3 student student 4096 Nov 14 19:00 proiect"},
+    {"cmd": "ls -a", "out": ".  ..  .bashrc  Documents  Downloads  notes.txt  proiect"},
+    {"cmd": "ls -lh notes.txt", "out": "-rw-r--r-- 1 student student 220 Nov 14 18:30 notes.txt"}
+  ]
+}
+</script>
+</div>
+
+<script type="text/markdown">
+**Citirea unei linii din `ls -l`:**
+
+```text
+-rw-r--r-- 1 student student 220 Nov 14 18:30 notes.txt
+│ │         │ │       │       │   │              └─ nume
+│ │         │ │       │       │   └─ dată/oră
+│ │         │ │       │       └─ mărime (octeți)
+│ │         │ │       └─ grup
+│ │         │ └─ proprietar
+│ │         └─ număr de legături
+│ └─ permisiuni (r w x pe user/group/others)
+└─ tip: - fișier, d director, l legătură
+```
+</script>
+</section>
